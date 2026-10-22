@@ -1,7 +1,7 @@
 package com.ogani.store.order.controller;
 
-import com.ogani.store.order.dto.CartResponse;
-import com.ogani.store.order.service.CartService;
+import com.ogani.store.order.dto.response.CartResponse;
+import com.ogani.store.order.service.interfaces.CartService;
 import com.ogani.store.security.UserPrincipal;
 
 import org.springframework.http.ResponseEntity;

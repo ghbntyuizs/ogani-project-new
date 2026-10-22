@@ -1,4 +1,4 @@
-package com.ogani.store.catalog.dto;
+package com.ogani.store.catalog.dto.response;
 
 import com.ogani.store.catalog.entity.ProductStatus;
 import com.ogani.store.catalog.entity.WeightUnit;

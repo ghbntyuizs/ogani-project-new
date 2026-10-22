@@ -35,7 +35,7 @@ Database **đã đủ 24 bảng** (Flyway V1–V3) và **đủ entity** (bảng 
 Package trống (repository, service, controller, dto, mapper của `order`/`content`...) có `package-info.java` ghi sẵn việc cần làm.
 
 **Lát cắt sản phẩm là khuôn mẫu** – đọc theo thứ tự này để hiểu cách mọi thứ nối nhau:
-`ProductController` → `ProductService` → `ProductSpecifications` / `ProductRepository` → `Product` (entity) → `ProductMapper` → `ProductRequest/Response`.
+`ProductController` → `ProductServiceImpl` → `ProductSpecifications` / `ProductRepository` → `Product` (entity) → `ProductMapper` → `ProductRequest/Response`.
 
 ## Thứ tự làm gợi ý
 1. **Cart** (`/api/cart`) – dễ nhất, quen với quan hệ nhiều-nhiều qua bảng trung gian.

@@ -1,4 +1,4 @@
-package com.ogani.store.auth.dto;
+package com.ogani.store.auth.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
