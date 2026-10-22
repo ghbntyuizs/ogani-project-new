@@ -1,7 +1,8 @@
 package com.ogani.store.catalog.controller;
 
 import com.ogani.store.catalog.dto.*;
-import com.ogani.store.catalog.service.ProductService;
+import com.ogani.store.catalog.dto.response.ProductResponse;
+import com.ogani.store.catalog.service.impl.ProductServiceImpl;
 import com.ogani.store.common.dto.ApiResponse;
 import com.ogani.store.common.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,9 +15,9 @@ import java.math.BigDecimal;
 @RequestMapping("/api/products")
 @Tag(name = "Products (public)")
 public class ProductController {
-    private final ProductService service;
+    private final ProductServiceImpl service;
 
-    public ProductController(ProductService service) { this.service = service; }
+    public ProductController(ProductServiceImpl service) { this.service = service; }
 
     @GetMapping
     @Operation(summary = "Danh sách sản phẩm: lọc theo danh mục/giá/sale/featured, sort=latest|price_asc|price_desc|rating|popular")

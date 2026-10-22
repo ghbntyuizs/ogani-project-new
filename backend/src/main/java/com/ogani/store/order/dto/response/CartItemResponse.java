@@ -1,4 +1,4 @@
-package com.ogani.store.order.dto;
+package com.ogani.store.order.dto.response;
 
 import java.math.BigDecimal;
 
