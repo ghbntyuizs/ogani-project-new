@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Ogani Food Store
 
 An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, with a storefront based on the
@@ -155,3 +156,6 @@ The same command runs in GitHub Actions on every push.
 - Storefront template **Ogani** by [Colorlib](https://colorlib.com/); see `frontend/readme.txt` for its license terms.
 - Admin template **Spark Admin** by ThemeWagon (MIT license).
 - Sample images come from the Ogani template.
+=======
+# organi_store
+>>>>>>> 2802fc29e5dc8652bf6e0a2c9e88657ef91b3979
