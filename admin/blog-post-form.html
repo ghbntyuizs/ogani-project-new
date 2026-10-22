@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add / Edit Post - Ogani Admin</title>
+  <link rel="icon" type="image/png" href="assets/images/favicon.ico">
+  <link rel="stylesheet" href="assets/libs/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/libs/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/ogani-admin.css">
+</head>
+<body>
+  <div class="sidebar-wrapper" id="sidebar">
+    <a href="index.html" class="sidebar-brand"><i class="bi bi-basket2-fill"></i><span>Ogani Admin</span></a>
+    <div class="flex-grow-1 overflow-y-auto"><div class="sidebar-menu-section"><div class="sidebar-menu-title">Overview</div><ul class="sidebar-menu-list"><li class="sidebar-menu-item"><a href="index.html" class="sidebar-menu-link" title="Dashboard"><i class="bi bi-grid-fill"></i><span>Dashboard</span></a></li></ul></div><div class="sidebar-menu-section"><div class="sidebar-menu-title">Catalog</div><ul class="sidebar-menu-list"><li class="sidebar-menu-item"><a href="products.html" class="sidebar-menu-link" title="Products"><i class="bi bi-box-seam"></i><span>Products</span></a></li><li class="sidebar-menu-item"><a href="categories.html" class="sidebar-menu-link" title="Categories"><i class="bi bi-tags"></i><span>Categories</span></a></li></ul></div><div class="sidebar-menu-section"><div class="sidebar-menu-title">Sales</div><ul class="sidebar-menu-list"><li class="sidebar-menu-item"><a href="orders.html" class="sidebar-menu-link" title="Orders"><i class="bi bi-receipt"></i><span>Orders</span></a></li><li class="sidebar-menu-item"><a href="customers.html" class="sidebar-menu-link" title="Customers"><i class="bi bi-people"></i><span>Customers</span></a></li><li class="sidebar-menu-item"><a href="coupons.html" class="sidebar-menu-link" title="Coupons"><i class="bi bi-ticket-perforated"></i><span>Coupons</span></a></li></ul></div><div class="sidebar-menu-section"><div class="sidebar-menu-title">Content</div><ul class="sidebar-menu-list"><li class="sidebar-menu-item"><a href="banners.html" class="sidebar-menu-link" title="Banners"><i class="bi bi-images"></i><span>Banners</span></a></li><li class="sidebar-menu-item"><a href="blog-posts.html" class="sidebar-menu-link active" title="Blog Posts"><i class="bi bi-journal-text"></i><span>Blog Posts</span></a></li></ul></div><div class="sidebar-menu-section"><div class="sidebar-menu-title">Engagement</div><ul class="sidebar-menu-list"><li class="sidebar-menu-item"><a href="reviews.html" class="sidebar-menu-link" title="Reviews & Comments"><i class="bi bi-star"></i><span>Reviews & Comments</span></a></li><li class="sidebar-menu-item"><a href="messages.html" class="sidebar-menu-link" title="Messages & Newsletter"><i class="bi bi-envelope-paper"></i><span>Messages & Newsletter</span></a></li></ul></div><div class="sidebar-menu-section"><div class="sidebar-menu-title">System</div><ul class="sidebar-menu-list"><li class="sidebar-menu-item"><a href="settings.html" class="sidebar-menu-link" title="Store Settings"><i class="bi bi-gear"></i><span>Store Settings</span></a></li></ul></div></div>
+    <div class="sidebar-profile">
+      <img src="assets/images/avatar.png" alt="Administrator" class="sidebar-profile-img">
+      <div class="sidebar-profile-info"><div class="sidebar-profile-name">Michael Scofield</div><div class="sidebar-profile-email">admin@ogani.local</div></div>
+    </div></div>
+  <div class="main-wrapper">
+    <header class="navbar-custom">
+      <div class="navbar-left">
+        <button class="btn-desktop-toggle d-none d-xl-flex align-items-center justify-content-center me-3" id="desktop-sidebar-toggle" aria-label="Minimize Sidebar"><i class="bi bi-chevron-bar-left"></i></button>
+        <button class="sidebar-toggle-btn me-2" id="sidebar-toggle" aria-label="Toggle Navigation"><i class="bi bi-list"></i></button>
+        <div class="dropdown ms-2">
+          <button class="btn-quick-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="quick-actions-dropdown"><i class="bi bi-plus-lg"></i><span>Create</span></button>
+          <ul class="dropdown-menu dropdown-menu-quick-action" aria-labelledby="quick-actions-dropdown">
+            <li class="dropdown-header">Quick Actions</li>
+            <li><a class="dropdown-item" href="product-form.html"><i class="bi bi-box-seam"></i> New Product</a></li>
+            <li><a class="dropdown-item" href="blog-post-form.html"><i class="bi bi-journal-plus"></i> New Blog Post</a></li>
+            <li><a class="dropdown-item" href="coupons.html"><i class="bi bi-ticket-perforated"></i> New Coupon</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear"></i> Store Settings</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="navbar-search-wrapper">
+        <input type="text" class="navbar-search-input" placeholder="Search orders, products, customers..." id="main-search">
+        <button class="navbar-search-btn" aria-label="Search"><i class="bi bi-search"></i></button>
+      </div>
+      <div class="navbar-actions">
+        <button class="navbar-action-btn me-1" aria-label="Toggle Fullscreen" id="btn-fullscreen"><i class="bi bi-arrows-fullscreen"></i></button>
+        <div class="dropdown">
+          <button class="navbar-action-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="btn-notifications" data-bs-auto-close="outside"><i class="bi bi-bell"></i><span class="navbar-action-badge"></span></button>
+          <div class="dropdown-menu dropdown-menu-end dropdown-menu-notification p-0" aria-labelledby="btn-notifications">
+            <div class="notification-header"><h6 class="notification-title">Notifications</h6><button class="btn-clear-all" type="button">Mark all read</button></div>
+            <div class="notification-list">
+              <a href="order-detail.html" class="notification-item"><div class="notification-icon bg-success text-white"><i class="bi bi-bag-check"></i></div><div class="notification-content"><p class="notification-text">New order <strong>ORD-20261017-0003</strong> ($77.00)</p><span class="notification-time">1 day ago</span></div><span class="notification-unread-dot"></span></a>
+              <a href="messages.html" class="notification-item"><div class="notification-icon bg-primary text-white"><i class="bi bi-envelope"></i></div><div class="notification-content"><p class="notification-text">New message from <strong>Alice Nguyen</strong></p><span class="notification-time">2 days ago</span></div><span class="notification-unread-dot"></span></a>
+              <a href="products.html" class="notification-item"><div class="notification-icon bg-warning text-dark"><i class="bi bi-box-seam-fill"></i></div><div class="notification-content"><p class="notification-text">Low stock: <strong>Orange Juice 1L</strong> (5 left)</p><span class="notification-time">3 days ago</span></div></a>
+            </div>
+            <a href="orders.html" class="notification-footer">View All Orders</a>
+          </div>
+        </div>
+        <div class="dropdown ms-2">
+          <button class="navbar-profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="profile-dropdown">
+            <img src="assets/images/avatar.png" alt="Profile" class="navbar-profile-img">
+            <span class="navbar-profile-name d-none d-md-inline">Michael Scofield</span>
+            <i class="bi bi-chevron-down navbar-profile-caret"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-profile" aria-labelledby="profile-dropdown">
+            <li class="dropdown-header">Welcome!</li>
+            <li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear"></i> Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="page-login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="page-header">
+      <div><h1 class="page-title">Add / Edit Post</h1><p class="page-subtitle">Fields mirror the Ogani Blog Details page.</p></div>
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="page-actions"></div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="index.html" class="text-decoration-none text-muted-green">Home</a></li><li class="breadcrumb-item text-muted-green"><a href="blog-posts.html" class="text-decoration-none text-muted-green">Blog Posts</a></li><li class="breadcrumb-item active text-main" aria-current="page">Edit</li></ol></nav>
+      </div>
+    </div>
+    <form onsubmit="return false"><div class="row g-4"><div class="col-lg-8"><div class="card border-light shadow-sm p-4"><div class="row g-3">
+  <div class="col-12"><label class="form-label-custom">Title</label><input type="text" class="form-control-custom" id="title" name="title" value="Cooking tips make cooking simple" placeholder="" data-slug-source="#slug"></div>
+  <div class="col-12"><label class="form-label-custom">Slug</label><input type="text" class="form-control-custom" id="slug" name="slug" value="cooking-tips-make-cooking-simple" placeholder="" ></div>
+  <div class="col-12"><label class="form-label-custom">Excerpt</label><textarea class="form-control-custom" id="excerpt" name="excerpt" rows="2" placeholder="">Simple tips that save time in the kitchen.</textarea></div>
+  <div class="col-12"><label class="form-label-custom">Content</label><textarea class="form-control-custom" id="content" name="content" rows="14" placeholder="">&lt;p&gt;Full article content...&lt;/p&gt;</textarea><div class="text-muted small mt-1">HTML is accepted (WYSIWYG editor such as TinyMCE/Quill can be plugged in later).</div></div>
+</div></div></div><div class="col-lg-4"><div class="card border-light shadow-sm p-4 mb-4"><h5 class="card-title mb-3">Publish</h5><div class="row g-3">
+  <div class="col-12"><label class="form-label-custom">Status</label><select class="form-select-custom" id="status" name="status"><option value="DRAFT">Draft</option><option value="PUBLISHED" selected>Published</option></select></div>
+  <div class="col-12"><label class="form-label-custom">Category</label><select class="form-select-custom" id="category_id" name="category_id"><option value="1" selected>Food</option><option value="2">Beauty</option><option value="3">Life Style</option><option value="4">Travel</option></select></div>
+  <div class="col-12"><label class="form-label-custom">Author</label><select class="form-select-custom" id="author_id" name="author_id"><option value="1" selected>Michael Scofield</option><option value="2">Linda Burrows</option></select></div></div></div>
+<div class="card border-light shadow-sm p-4 mb-4"><h5 class="card-title mb-3">Tags</h5><div class="form-check-custom"><input class="form-check-input-custom" type="checkbox" id="tag0"><label class="form-check-label" for="tag0">Apple</label></div><div class="form-check-custom"><input class="form-check-input-custom" type="checkbox" id="tag1"><label class="form-check-label" for="tag1">Vegetables</label></div><div class="form-check-custom"><input class="form-check-input-custom" type="checkbox" id="tag2"><label class="form-check-label" for="tag2">Fruit</label></div><div class="form-check-custom"><input class="form-check-input-custom" type="checkbox" id="tag3" checked><label class="form-check-label" for="tag3">Healthy Food</label></div><div class="form-check-custom"><input class="form-check-input-custom" type="checkbox" id="tag4" checked><label class="form-check-label" for="tag4">Cooking</label></div><div class="form-check-custom"><input class="form-check-input-custom" type="checkbox" id="tag5"><label class="form-check-label" for="tag5">Lifestyle</label></div></div>
+<div class="card border-light shadow-sm p-4"><h5 class="card-title mb-3">Thumbnail</h5><div class="img-drop"><img id="postThumb" class="has-img" src="assets/images/ogani/blog/blog-1.jpg" alt=""><input type="file" class="form-control-custom" accept="image/*" data-preview="#postThumb"></div></div></div></div><div class="d-flex gap-2 mt-4"><button type="submit" class="btn-custom btn-custom-primary"><i class="bi bi-check-lg"></i> Save</button><a href="blog-posts.html" class="btn-custom btn-custom-outline-secondary">Cancel</a></div></form>
+    <footer class="footer-custom">
+      <div class="footer-left"><span class="footer-logo"><i class="bi bi-basket2-fill"></i> Ogani Admin</span><span class="footer-separator">|</span>
+        <span class="footer-copy">&copy; 2026 Ogani Food Store &bull; Admin UI based on Spark Admin (MIT) by ThemeWagon</span></div>
+      <div class="footer-right"><ul class="footer-links"><li><a href="index.html" class="footer-link">Dashboard</a></li><li><a href="settings.html" class="footer-link">Settings</a></li></ul></div>
+    </footer>
+  </div>
+  <script src="assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>

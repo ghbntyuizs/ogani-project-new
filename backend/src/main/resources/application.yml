@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: ogani-store
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ogani_store}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:123456}
+  jpa:
+    open-in-view: false          # tránh lazy-load ngầm ở tầng controller
+    hibernate:
+      ddl-auto: none             # schema do Flyway quản lý, Hibernate không tự sửa
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-please-use-at-least-32-characters-long-secret}
+    access-ttl-minutes: 15
+    refresh-ttl-days: 7
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

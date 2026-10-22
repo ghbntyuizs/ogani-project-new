@@ -1,0 +1,59 @@
+/* Ogani Admin - bổ sung nhỏ trên nền Spark (main.css). Không sửa main.css. */
+:root { --ogani-green: #7fad39; }
+
+/* Badge bổ sung (cùng kiểu .badge-table) */
+.badge-table.info   { background: rgba(59,130,246,.1); color: #2563eb; }
+.badge-table.info::before { background: #2563eb; }
+.badge-table.muted  { background: rgba(108,126,117,.12); color: var(--text-muted-green); }
+.badge-table.muted::before { background: var(--text-muted-green); }
+
+/* Ảnh sản phẩm / banner trong bảng */
+.prod-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #e9efef; flex-shrink: 0; }
+.banner-thumb { width: 120px; height: 56px; border-radius: 8px; object-fit: cover; }
+.price-old { text-decoration: line-through; color: var(--text-muted-green); font-weight: 500; font-size: .8rem; margin-left: .35rem; }
+.rating-stars { color: #f59e0b; font-size: .8rem; white-space: nowrap; }
+.stock-low { color: #f97316; font-weight: 700; }
+.stock-out { color: #ef4444; font-weight: 700; }
+.text-clip { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Tabs trong trang */
+.admin-tabs { border-bottom: 1px solid var(--border-light); gap: .25rem; margin-bottom: 1.25rem; }
+.admin-tabs .nav-link { border: 0; border-bottom: 2px solid transparent; color: var(--text-muted-green); font-weight: 600; font-size: .875rem; padding: .6rem 1rem; background: none; }
+.admin-tabs .nav-link.active, .admin-tabs .nav-link:hover { color: var(--brand-forest-medium); border-bottom-color: var(--brand-forest-medium); background: none; }
+.status-pills { display: flex; flex-wrap: wrap; gap: .5rem; padding: 1rem 1.25rem 0; background: #fff; }
+.status-pill { border: 1px solid var(--border-light); background: #fff; border-radius: 50rem; padding: .3rem .9rem; font-size: .8rem; font-weight: 600; color: var(--text-muted-green); cursor: pointer; }
+.status-pill.active { background: var(--brand-forest-medium); color: #fff; border-color: var(--brand-forest-medium); }
+
+/* Upload ảnh */
+.img-drop { border: 2px dashed var(--border-light); border-radius: 14px; padding: 1.25rem; text-align: center; background: #fafcfb; }
+.img-drop img { max-width: 100%; max-height: 180px; border-radius: 10px; display: none; margin: 0 auto .75rem; }
+.img-drop img.has-img { display: block; }
+.gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-top: .75rem; }
+.gallery-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+/* Order detail */
+.kv-row { display: flex; justify-content: space-between; padding: .45rem 0; font-size: .875rem; border-bottom: 1px dashed var(--border-light); }
+.kv-row:last-child { border-bottom: 0; }
+.kv-row span:first-child { color: var(--text-muted-green); }
+.kv-row.total { font-weight: 800; font-size: 1rem; }
+.timeline { list-style: none; margin: 0; padding: 0 0 0 1rem; border-left: 2px solid var(--border-light); }
+.timeline li { position: relative; padding: 0 0 1.1rem 1rem; font-size: .85rem; }
+.timeline li::before { content: ''; position: absolute; left: -1.4rem; top: .3rem; width: 10px; height: 10px; border-radius: 50%; background: var(--brand-forest-medium); }
+.timeline li:last-child { padding-bottom: 0; }
+.timeline small { display: block; color: var(--text-muted-green); }
+
+/* Banner cards */
+.banner-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 12px 12px 0 0; }
+.banner-card .card-body-pad { padding: 1rem 1.25rem; }
+
+/* Modal dùng form custom */
+.modal-content { border: 0; border-radius: 18px; }
+.modal-header, .modal-footer { border-color: var(--border-light); }
+
+/* Nút lọc ngoài card */
+.page-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Tiện ích bổ sung cho progress bar & legend của dashboard */
+.w-10 { width: 10%; }
+.w-20 { width: 20%; }
+.chart-legends-container { flex-wrap: wrap; justify-content: center; }

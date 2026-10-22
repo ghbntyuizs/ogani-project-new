@@ -1,0 +1,29 @@
+# Tuỳ chọn: chạy PostgreSQL (và app) bằng Docker. Nếu bạn đã có PostgreSQL + pgAdmin trên máy thì KHÔNG cần file này.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ogani_store
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports: ["5433:5432"]            # 5433 để không đụng PostgreSQL cài sẵn trên máy (5432)
+    volumes: [db_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ogani_store"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/ogani_store
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-change-me-please-use-at-least-32-characters-long-secret}
+    ports: ["8080:8080"]
+
+volumes:
+  db_data:
