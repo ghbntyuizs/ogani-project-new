@@ -4,7 +4,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/ogani_store}
     username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:123456}
+    password: ${DB_PASSWORD:postgres}
   jpa:
     open-in-view: false          # tránh lazy-load ngầm ở tầng controller
     hibernate:
