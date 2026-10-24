@@ -3,10 +3,12 @@ package com.ogani.store.catalog.controller;
 import com.ogani.store.catalog.dto.*;
 import com.ogani.store.catalog.dto.response.ProductResponse;
 import com.ogani.store.catalog.service.impl.ProductServiceImpl;
+import com.ogani.store.catalog.service.interfaces.ProductService;
 import com.ogani.store.common.dto.ApiResponse;
 import com.ogani.store.common.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 
@@ -14,10 +16,9 @@ import java.math.BigDecimal;
 @RestController
 @RequestMapping("/api/products")
 @Tag(name = "Products (public)")
+@RequiredArgsConstructor
 public class ProductController {
-    private final ProductServiceImpl service;
-
-    public ProductController(ProductServiceImpl service) { this.service = service; }
+    private final ProductService productService;
 
     @GetMapping
     @Operation(summary = "Danh sách sản phẩm: lọc theo danh mục/giá/sale/featured, sort=latest|price_asc|price_desc|rating|popular")
@@ -32,11 +33,11 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         ProductFilter f = new ProductFilter(keyword, categoryId, minPrice, maxPrice, onSale, featured, null);
-        return ApiResponse.ok(service.search(f, ProductSort.from(sort), page, size, true));
+        return ApiResponse.ok(productService.search(f, ProductSort.from(sort), page, size, true));
     }
 
     @GetMapping("/{slug}")
     public ApiResponse<ProductResponse> detail(@PathVariable String slug) {
-        return ApiResponse.ok(service.getBySlug(slug));
+        return ApiResponse.ok(productService.getBySlug(slug));
     }
 }
