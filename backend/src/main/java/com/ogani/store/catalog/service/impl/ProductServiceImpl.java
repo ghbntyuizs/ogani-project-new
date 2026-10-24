@@ -149,7 +149,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void delete(Long id) {
-        products.delete(find(id));
+        Product product = find(id);
+        product.setStatus(ProductStatus.HIDDEN);
     }
 
     private void validate(ProductRequest request) {
