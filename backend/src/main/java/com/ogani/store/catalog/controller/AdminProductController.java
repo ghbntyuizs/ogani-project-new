@@ -4,7 +4,6 @@ import com.ogani.store.catalog.dto.*;
 import com.ogani.store.catalog.dto.request.ProductRequest;
 import com.ogani.store.catalog.dto.response.ProductResponse;
 import com.ogani.store.catalog.entity.ProductStatus;
-import com.ogani.store.catalog.service.impl.ProductServiceImpl;
 import com.ogani.store.catalog.service.interfaces.ProductService;
 import com.ogani.store.common.dto.ApiResponse;
 import com.ogani.store.common.dto.PageResponse;
