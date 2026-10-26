@@ -4,11 +4,8 @@ import com.ogani.store.catalog.dto.request.ProductRequest;
 import com.ogani.store.catalog.dto.response.ProductResponse;
 import com.ogani.store.catalog.entity.Product;
 import com.ogani.store.catalog.entity.ProductStatus;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -29,6 +26,7 @@ public interface ProductMapper {
     @Mapping(target = "version", ignore = true)
     Product toEntity(ProductRequest r);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "version", ignore = true)

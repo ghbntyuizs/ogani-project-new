@@ -1,8 +1,9 @@
 package com.ogani.store.catalog.controller;
 
 import com.ogani.store.catalog.dto.*;
+import com.ogani.store.catalog.dto.response.ProductImageResponse;
 import com.ogani.store.catalog.dto.response.ProductResponse;
-import com.ogani.store.catalog.service.impl.ProductServiceImpl;
+import com.ogani.store.catalog.service.interfaces.ProductImageService;
 import com.ogani.store.catalog.service.interfaces.ProductService;
 import com.ogani.store.common.dto.ApiResponse;
 import com.ogani.store.common.dto.PageResponse;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 /** API công khai cho trang Shop / Shop Details của Ogani. */
 @RestController
@@ -19,6 +21,7 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final ProductImageService productImageService;
 
     @GetMapping
     @Operation(summary = "Danh sách sản phẩm: lọc theo danh mục/giá/sale/featured, sort=latest|price_asc|price_desc|rating|popular")
@@ -39,5 +42,10 @@ public class ProductController {
     @GetMapping("/{slug}")
     public ApiResponse<ProductResponse> detail(@PathVariable String slug) {
         return ApiResponse.ok(productService.getBySlug(slug));
+    }
+
+    @GetMapping("/{slug}/images")
+    public ApiResponse<List<ProductImageResponse>> images(@PathVariable String slug) {
+        return ApiResponse.ok(productImageService.listBySlug(slug));
     }
 }
