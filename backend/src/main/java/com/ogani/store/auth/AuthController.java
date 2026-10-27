@@ -6,6 +6,7 @@ import com.ogani.store.auth.dto.request.RefreshRequest;
 import com.ogani.store.auth.dto.request.RegisterRequest;
 import com.ogani.store.auth.dto.response.AuthResponse;
 import com.ogani.store.auth.service.impl.AuthServiceImpl;
+import com.ogani.store.auth.service.interfaces.AuthService;
 import com.ogani.store.common.dto.ApiResponse;
 import com.ogani.store.security.UserPrincipal;
 import jakarta.validation.Valid;
@@ -16,29 +17,29 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthServiceImpl authServiceImpl;
+    private final AuthService authService;
 
-    public AuthController(AuthServiceImpl authServiceImpl) { this.authServiceImpl = authServiceImpl; }
+    public AuthController(AuthServiceImpl authServiceImpl) { this.authService = authServiceImpl; }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest r) {
-        return ApiResponse.ok("Registered", authServiceImpl.register(r));
+        return ApiResponse.ok("Registered", authService.register(r));
     }
 
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest r) {
-        return ApiResponse.ok(authServiceImpl.login(r));
+        return ApiResponse.ok(authService.login(r));
     }
 
     @PostMapping("/refresh")
     public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RefreshRequest r) {
-        return ApiResponse.ok(authServiceImpl.refresh(r.refreshToken()));
+        return ApiResponse.ok(authService.refresh(r.refreshToken()));
     }
 
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@Valid @RequestBody RefreshRequest r) {
-        authServiceImpl.logout(r.refreshToken());
+        authService.logout(r.refreshToken());
         return ApiResponse.ok("Logged out", null);
     }
 

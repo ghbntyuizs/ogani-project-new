@@ -39,7 +39,9 @@ public class AdminProductController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<ProductResponse> get(@PathVariable Long id) { return ApiResponse.ok(productService.getById(id)); }
+    public ApiResponse<ProductResponse> get(@PathVariable Long id) {
+        return ApiResponse.ok(productService.getById(id));
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
