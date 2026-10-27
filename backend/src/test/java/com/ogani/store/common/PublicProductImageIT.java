@@ -1,4 +1,4 @@
-package com.ogani.store.catalog;
+package com.ogani.store.common;
 
 import com.ogani.store.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.DisplayName;

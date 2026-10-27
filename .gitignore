@@ -1,0 +1,13 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Build output
+**/target/
+
+# Local config and secrets
+.env
+
+# OS
+.DS_Store
