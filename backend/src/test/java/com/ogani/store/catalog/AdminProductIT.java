@@ -1,4 +1,4 @@
-package com.ogani.store.common;
+package com.ogani.store.catalog;
 
 import com.ogani.store.support.AbstractIntegrationTest;
 import jakarta.persistence.EntityManager;
@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,6 +24,18 @@ class AdminProductIT extends AbstractIntegrationTest {
     EntityManager em;
     @Autowired
     JdbcTemplate jdbc;
+
+    private String thumbnailOf(long productId) throws Exception {
+        String json = get(
+                "/api/admin/products/" + productId,
+                ADMIN
+        ).andReturn().getResponse().getContentAsString();
+
+        return com.jayway.jsonpath.JsonPath.read(
+                json,
+                "$.data.thumbnailUrl"
+        );
+    }
 
     // =====================================================================
     // CREATE
@@ -135,9 +148,6 @@ class AdminProductIT extends AbstractIntegrationTest {
         }
     }
 
-    // =====================================================================
-    // UPDATE
-    // =====================================================================
     @Nested
     @DisplayName("PUT /api/admin/products/{id}")
     class Update {
@@ -222,6 +232,49 @@ class AdminProductIT extends AbstractIntegrationTest {
             put("/api/admin/products/abc", ADMIN, productJson("X", "TST-400"))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("Gallery có ảnh -> PUT product không ghi đè thumbnail")
+        void updatingProduct_doesNotOverrideGalleryThumbnail() throws Exception {
+            String before = com.jayway.jsonpath.JsonPath.read(
+                    get("/api/admin/products/1", ADMIN)
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString(),
+                    "$.data.thumbnailUrl"
+            );
+
+            String body = productJson("Vegetable's Package", "VEG-001")
+                    .replace(
+                            "\"stockQuantity\":10",
+                            "\"stockQuantity\":10,"
+                                    + "\"thumbnailUrl\":\"img/should-not-win.jpg\""
+                    );
+
+            put("/api/admin/products/1", ADMIN, body)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.thumbnailUrl").value(before));
+
+            assertEquals(before, thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Gallery rỗng -> PUT product vẫn cho phép đổi thumbnail")
+        void updatingProduct_emptyGallery_allowsThumbnailChange() throws Exception {
+            String body = productJson("Updated Product 2", "VEG-002")
+                    .replace(
+                            "\"stockQuantity\":10",
+                            "\"stockQuantity\":10,"
+                                    + "\"thumbnailUrl\":\"img/manual-thumbnail.jpg\""
+                    );
+
+            put("/api/admin/products/2", ADMIN, body)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.thumbnailUrl")
+                            .value("img/manual-thumbnail.jpg"));
+
+            assertEquals("img/manual-thumbnail.jpg", thumbnailOf(2));
+        }
     }
 
     // =====================================================================
@@ -257,7 +310,7 @@ class AdminProductIT extends AbstractIntegrationTest {
             em.flush(); // đẩy UPDATE (hoặc DELETE nếu ai đó lỡ đổi lại thành hard delete) xuống DB trước khi đếm
 
             Integer after = jdbc.queryForObject("SELECT COUNT(*) FROM order_items WHERE product_id = 1", Integer.class);
-            org.junit.jupiter.api.Assertions.assertEquals(before, after);
+            assertEquals(before, after);
         }
 
         @Test
