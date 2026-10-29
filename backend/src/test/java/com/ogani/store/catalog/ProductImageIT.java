@@ -37,6 +37,30 @@ class ProductImageIT extends AbstractIntegrationTest {
         return sb.append("]}").toString();
     }
 
+    private String thumbnailOf(long productId) throws Exception {
+        String json = get(
+                "/api/admin/products/" + productId,
+                ADMIN
+        ).andReturn().getResponse().getContentAsString();
+
+        return com.jayway.jsonpath.JsonPath.read(
+                json,
+                "$.data.thumbnailUrl"
+        );
+    }
+
+    private List<String> imageUrlsOf(long productId) throws Exception {
+        String json = get(
+                "/api/admin/products/" + productId + "/images",
+                ADMIN
+        ).andReturn().getResponse().getContentAsString();
+
+        return com.jayway.jsonpath.JsonPath.read(
+                json,
+                "$.data[*].imageUrl"
+        );
+    }
+
     // =====================================================================
     @Nested
     @DisplayName("GET danh sách ảnh")
@@ -147,6 +171,37 @@ class ProductImageIT extends AbstractIntegrationTest {
             delete("/api/admin/products/1", ADMIN).andExpect(status().isOk());
             post(WITH_IMAGES, ADMIN, image("img/hidden-ok.jpg")).andExpect(status().isCreated());
         }
+
+        @Test
+        @DisplayName("Thêm ảnh đứng đầu gallery -> thumbnail đổi theo")
+        void imageInFront_becomesThumbnail() throws Exception {
+            post(WITH_IMAGES, ADMIN, image("img/cover.jpg", 0))
+                    .andExpect(status().isCreated());
+
+            assertEquals("img/cover.jpg", thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Thêm ảnh cuối gallery -> thumbnail không đổi")
+        void appendedImage_keepsThumbnail() throws Exception {
+            String before = thumbnailOf(1);
+
+            post(WITH_IMAGES, ADMIN, image("img/new.jpg"))
+                    .andExpect(status().isCreated());
+
+            assertEquals(before, thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Thêm ảnh đầu tiên vào gallery rỗng -> thumbnail được cập nhật")
+        void firstImageOfEmptyGallery_becomesThumbnail() throws Exception {
+            post(NO_IMAGES, ADMIN, image("img/first.jpg"))
+                    .andExpect(status().isCreated());
+
+            assertEquals("img/first.jpg", thumbnailOf(2));
+        }
+
+
     }
 
     // =====================================================================
@@ -191,6 +246,63 @@ class ProductImageIT extends AbstractIntegrationTest {
         void unknownImage_returns404() throws Exception {
             put(WITH_IMAGES + "/999999", ADMIN, image("img/x.jpg")).andExpect(status().isNotFound());
         }
+
+        @Test
+        @DisplayName("Đổi URL ảnh đầu tiên -> thumbnail đổi theo")
+        void changingFirstImageUrl_updatesThumbnail() throws Exception {
+            Long firstImageId = imageIdsOf(1).get(0);
+
+            put(
+                    WITH_IMAGES + "/" + firstImageId,
+                    ADMIN,
+                    image("img/renamed.jpg")
+            ).andExpect(status().isOk());
+
+            assertEquals("img/renamed.jpg", thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Đổi URL ảnh không phải ảnh đầu -> thumbnail không đổi")
+        void changingOtherImageUrl_keepsThumbnail() throws Exception {
+            String before = thumbnailOf(1);
+            Long secondImageId = imageIdsOf(1).get(1);
+
+            put(
+                    WITH_IMAGES + "/" + secondImageId,
+                    ADMIN,
+                    image("img/other.jpg")
+            ).andExpect(status().isOk());
+
+            assertEquals(before, thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Đưa ảnh cuối lên đầu -> thumbnail đổi theo")
+        void movingImageToFront_becomesThumbnail() throws Exception {
+            Long lastImageId = imageIdsOf(1).get(2);
+
+            put(
+                    WITH_IMAGES + "/" + lastImageId,
+                    ADMIN,
+                    image("img/moved.jpg", 0)
+            ).andExpect(status().isOk());
+
+            assertEquals("img/moved.jpg", thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Hai ảnh trùng sortOrder -> ảnh có id nhỏ hơn đứng trước")
+        void equalSortOrder_usesSmallerIdAsTieBreaker() throws Exception {
+            Long firstImageId = imageIdsOf(1).get(0);
+
+            put(
+                    WITH_IMAGES + "/" + firstImageId,
+                    ADMIN,
+                    image("img/tie-first.jpg", 2)
+            ).andExpect(status().isOk());
+
+            assertEquals("img/tie-first.jpg", thumbnailOf(1));
+        }
     }
 
     // =====================================================================
@@ -216,14 +328,45 @@ class ProductImageIT extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Xoá ảnh trùng thumbnailUrl -> thumbnail của sản phẩm KHÔNG đổi")
-        void deletingImage_doesNotChangeProductThumbnail() throws Exception {
-            String thumbnailBefore = com.jayway.jsonpath.JsonPath.read(
-                    get("/api/admin/products/1", ADMIN).andReturn().getResponse().getContentAsString(),
-                    "$.data.thumbnailUrl");
-            Long imageId = imageIdsOf(1).get(0);
-            delete(WITH_IMAGES + "/" + imageId, ADMIN).andExpect(status().isOk());
-            get("/api/admin/products/1", ADMIN).andExpect(jsonPath("$.data.thumbnailUrl").value(thumbnailBefore));
+        @DisplayName("Xóa ảnh đầu -> ảnh kế tiếp thành thumbnail")
+        void deletingFirstImage_nextBecomesThumbnail() throws Exception {
+            List<String> urls = imageUrlsOf(1);
+            Long firstImageId = imageIdsOf(1).get(0);
+
+            delete(WITH_IMAGES + "/" + firstImageId, ADMIN)
+                    .andExpect(status().isOk());
+
+            assertEquals(urls.get(1), thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Xóa ảnh không phải ảnh đầu -> thumbnail không đổi")
+        void deletingOtherImage_keepsThumbnail() throws Exception {
+            String before = thumbnailOf(1);
+            Long lastImageId = imageIdsOf(1).get(2);
+
+            delete(WITH_IMAGES + "/" + lastImageId, ADMIN)
+                    .andExpect(status().isOk());
+
+            assertEquals(before, thumbnailOf(1));
+        }
+
+        @Test
+        @DisplayName("Xóa hết gallery -> thumbnail giữ URL của ảnh cuối cùng")
+        void deletingAllImages_keepsLastThumbnail() throws Exception {
+            List<Long> ids = imageIdsOf(1);
+            List<String> urls = imageUrlsOf(1);
+
+            for (Long imageId : ids) {
+                delete(WITH_IMAGES + "/" + imageId, ADMIN)
+                        .andExpect(status().isOk());
+            }
+
+            assertEquals(urls.get(urls.size() - 1), thumbnailOf(1));
+
+            get(WITH_IMAGES, ADMIN)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data", hasSize(0)));
         }
     }
 
@@ -296,6 +439,21 @@ class ProductImageIT extends AbstractIntegrationTest {
         @DisplayName("Sản phẩm không tồn tại -> 404")
         void unknownProduct_returns404() throws Exception {
             put("/api/admin/products/999999/images/order", ADMIN, order(1L)).andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("Reorder -> thumbnail bằng ảnh mới đứng đầu")
+        void reorder_newFirstBecomesThumbnail() throws Exception {
+            List<Long> ids = imageIdsOf(1);
+            List<String> urls = imageUrlsOf(1);
+
+            put(
+                    WITH_IMAGES + "/order",
+                    ADMIN,
+                    order(ids.get(2), ids.get(1), ids.get(0))
+            ).andExpect(status().isOk());
+
+            assertEquals(urls.get(2), thumbnailOf(1));
         }
     }
 }

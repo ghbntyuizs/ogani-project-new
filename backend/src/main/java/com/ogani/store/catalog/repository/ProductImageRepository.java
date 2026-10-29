@@ -16,4 +16,6 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
 
     @Query("select coalesce(max(i.sortOrder), 0) from ProductImage i where i.product.id = :productId")
     int findMaxSortOrder(@Param("productId") Long productId);
+
+    Optional<ProductImage> findFirstByProductIdOrderBySortOrderAscIdAsc(Long productId);
 }
