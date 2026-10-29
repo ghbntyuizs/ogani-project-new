@@ -1,6 +1,6 @@
-package com.ogani.store.catalog.controller;
+package com.ogani.store.catalog.controller.category;
 
-import com.ogani.store.catalog.dto.response.CategoryResponse;
+import com.ogani.store.catalog.dto.response.category.CategoryResponse;
 import com.ogani.store.catalog.service.interfaces.CategoryService;
 import com.ogani.store.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

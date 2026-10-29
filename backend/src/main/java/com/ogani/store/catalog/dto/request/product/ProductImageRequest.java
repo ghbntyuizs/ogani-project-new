@@ -1,4 +1,4 @@
-package com.ogani.store.catalog.dto.request;
+package com.ogani.store.catalog.dto.request.product;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

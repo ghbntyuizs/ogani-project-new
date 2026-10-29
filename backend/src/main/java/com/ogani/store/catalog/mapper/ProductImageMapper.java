@@ -1,6 +1,6 @@
 package com.ogani.store.catalog.mapper;
 
-import com.ogani.store.catalog.dto.response.ProductImageResponse;
+import com.ogani.store.catalog.dto.response.product.ProductImageResponse;
 import com.ogani.store.catalog.entity.ProductImage;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

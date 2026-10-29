@@ -1,8 +1,8 @@
-package com.ogani.store.catalog.controller;
+package com.ogani.store.catalog.controller.product;
 
 import com.ogani.store.catalog.dto.*;
-import com.ogani.store.catalog.dto.response.ProductImageResponse;
-import com.ogani.store.catalog.dto.response.ProductResponse;
+import com.ogani.store.catalog.dto.response.product.ProductImageResponse;
+import com.ogani.store.catalog.dto.response.product.ProductResponse;
 import com.ogani.store.catalog.service.interfaces.ProductImageService;
 import com.ogani.store.catalog.service.interfaces.ProductService;
 import com.ogani.store.common.dto.ApiResponse;

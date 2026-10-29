@@ -1,8 +1,8 @@
-package com.ogani.store.catalog.controller;
+package com.ogani.store.catalog.controller.adminController;
 
-import com.ogani.store.catalog.dto.request.ProductImageOrderRequest;
-import com.ogani.store.catalog.dto.request.ProductImageRequest;
-import com.ogani.store.catalog.dto.response.ProductImageResponse;
+import com.ogani.store.catalog.dto.request.product.ProductImageOrderRequest;
+import com.ogani.store.catalog.dto.request.product.ProductImageRequest;
+import com.ogani.store.catalog.dto.response.product.ProductImageResponse;
 import com.ogani.store.catalog.service.interfaces.ProductImageService;
 import com.ogani.store.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

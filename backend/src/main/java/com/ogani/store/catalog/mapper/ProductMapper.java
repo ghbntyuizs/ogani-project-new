@@ -1,7 +1,7 @@
 package com.ogani.store.catalog.mapper;
 
-import com.ogani.store.catalog.dto.request.ProductRequest;
-import com.ogani.store.catalog.dto.response.ProductResponse;
+import com.ogani.store.catalog.dto.request.product.ProductRequest;
+import com.ogani.store.catalog.dto.response.product.ProductResponse;
 import com.ogani.store.catalog.entity.Product;
 import com.ogani.store.catalog.entity.ProductStatus;
 import org.mapstruct.*;
