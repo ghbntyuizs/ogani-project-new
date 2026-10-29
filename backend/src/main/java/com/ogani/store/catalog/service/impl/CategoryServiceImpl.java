@@ -5,6 +5,7 @@ import com.ogani.store.catalog.dto.response.category.CategoryResponse;
 import com.ogani.store.catalog.entity.Category;
 import com.ogani.store.catalog.mapper.CategoryMapper;
 import com.ogani.store.catalog.repository.CategoryRepository;
+import com.ogani.store.catalog.repository.ProductRepository;
 import com.ogani.store.catalog.service.interfaces.CategoryService;
 import com.ogani.store.common.exception.AppException;
 import com.ogani.store.common.exception.ErrorCode;
@@ -22,6 +23,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categories;
     private final CategoryMapper categoryMapper;
+    private final ProductRepository products;
 
     @Override
     public List<CategoryResponse> list() {
@@ -122,6 +124,36 @@ public class CategoryServiceImpl implements CategoryService {
         Category saved = categories.save(category);
 
         return categoryMapper.toResponse(saved);
+    }
+    @Override
+    @Transactional
+    public void delete(Integer id) {
+        Category category = categories.findById(id)
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category"));
+
+        // DELETE được thiết kế idempotent:
+        // gọi lại với danh mục đã inactive vẫn thành công.
+        if (Boolean.FALSE.equals(category.getActive())) {
+            return;
+        }
+
+        if (products.existsByCategory_Id(id)) {
+            throw AppException.withCustomMessage(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Cannot delete category because products still reference it"
+            );
+        }
+
+        if (categories.existsByParent_IdAndActiveTrue(id)) {
+            throw AppException.withCustomMessage(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Cannot delete category because it has active child categories"
+            );
+        }
+
+        category.setActive(false);
+        categories.save(category);
     }
 
     private Category findValidParent(Integer categoryId, Integer parentId) {

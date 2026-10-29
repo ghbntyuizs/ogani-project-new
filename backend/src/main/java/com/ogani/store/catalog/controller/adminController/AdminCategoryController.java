@@ -4,6 +4,7 @@ import com.ogani.store.catalog.dto.request.category.CategoryRequest;
 import com.ogani.store.catalog.dto.response.category.CategoryResponse;
 import com.ogani.store.catalog.service.interfaces.CategoryService;
 import com.ogani.store.common.dto.ApiResponse;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -43,5 +44,12 @@ public class AdminCategoryController {
                 "Category updated",
                 categoryService.update(id, request)
         );
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
+        categoryService.delete(id);
+        return ApiResponse.ok("Category deleted", null);
     }
 }
