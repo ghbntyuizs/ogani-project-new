@@ -2,8 +2,8 @@ package com.ogani.store.catalog.service.interfaces;
 
 import com.ogani.store.catalog.dto.ProductFilter;
 import com.ogani.store.catalog.dto.ProductSort;
-import com.ogani.store.catalog.dto.request.ProductRequest;
-import com.ogani.store.catalog.dto.response.ProductResponse;
+import com.ogani.store.catalog.dto.request.product.ProductRequest;
+import com.ogani.store.catalog.dto.response.product.ProductResponse;
 import com.ogani.store.common.dto.PageResponse;
 
 public interface ProductService {

@@ -1,8 +1,8 @@
 package com.ogani.store.catalog.service.impl;
 
-import com.ogani.store.catalog.dto.request.ProductImageOrderRequest;
-import com.ogani.store.catalog.dto.request.ProductImageRequest;
-import com.ogani.store.catalog.dto.response.ProductImageResponse;
+import com.ogani.store.catalog.dto.request.product.ProductImageOrderRequest;
+import com.ogani.store.catalog.dto.request.product.ProductImageRequest;
+import com.ogani.store.catalog.dto.response.product.ProductImageResponse;
 import com.ogani.store.catalog.entity.Product;
 import com.ogani.store.catalog.entity.ProductImage;
 import com.ogani.store.catalog.entity.ProductStatus;

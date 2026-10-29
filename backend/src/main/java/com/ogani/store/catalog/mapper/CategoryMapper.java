@@ -1,6 +1,6 @@
 package com.ogani.store.catalog.mapper;
 
-import com.ogani.store.catalog.dto.response.CategoryResponse;
+import com.ogani.store.catalog.dto.response.category.CategoryResponse;
 import com.ogani.store.catalog.entity.Category;
 import org.springframework.stereotype.Component;
 

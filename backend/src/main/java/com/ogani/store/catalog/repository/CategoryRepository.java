@@ -8,4 +8,8 @@ import com.ogani.store.catalog.entity.*;
 
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
     List<Category> findByActiveTrueOrderBySortOrderAsc();
+
+    boolean existsBySlug(String slug);
+
+    Optional<Category> findBySlug(String slug);
 }
