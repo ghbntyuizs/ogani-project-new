@@ -5,7 +5,7 @@ import com.ogani.store.catalog.entity.Category;
 import com.ogani.store.catalog.entity.Product;
 import com.ogani.store.catalog.repository.CategoryRepository;
 import com.ogani.store.catalog.repository.ProductRepository;
-import com.ogani.store.support.AbstractIntegrationTest;
+import com.ogani.store.common.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -94,7 +94,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         assertThat(category.getActive()).isTrue();
 
         delete("/api/admin/categories/" + category.getId(), ADMIN)
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict());
 
         // Danh mục phải còn active sau khi request bị từ chối.
         assertThat(findCategory(category.getId()).getActive()).isTrue();

@@ -7,7 +7,7 @@ import com.ogani.store.auth.dto.request.RegisterRequest;
 import com.ogani.store.auth.dto.response.AuthResponse;
 import com.ogani.store.auth.service.impl.AuthServiceImpl;
 import com.ogani.store.auth.service.interfaces.AuthService;
-import com.ogani.store.common.dto.ApiResponse;
+import com.ogani.store.common.dto.common.ApiResponse;
 import com.ogani.store.security.UserPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
