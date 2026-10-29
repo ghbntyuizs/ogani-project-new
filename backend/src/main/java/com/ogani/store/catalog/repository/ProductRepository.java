@@ -2,10 +2,9 @@ package com.ogani.store.catalog.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import java.util.List;
 import java.util.Optional;
-import com.ogani.store.user.entity.*;
 import com.ogani.store.catalog.entity.*;
+import com.ogani.store.catalog.entity.ProductStatus;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     Optional<Product> findBySlug(String slug);
@@ -14,4 +13,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     boolean existsBySku(String sku);
 
-    boolean existsByCategory_Id(Integer categoryId);}
+    boolean existsByCategory_IdAndStatusNot(
+            Integer categoryId,
+            ProductStatus status
+    );
+}
+

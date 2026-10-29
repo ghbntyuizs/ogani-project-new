@@ -5,7 +5,7 @@ import com.ogani.store.catalog.dto.response.product.ProductImageResponse;
 import com.ogani.store.catalog.dto.response.product.ProductResponse;
 import com.ogani.store.catalog.service.interfaces.ProductImageService;
 import com.ogani.store.catalog.service.interfaces.ProductService;
-import com.ogani.store.common.dto.ApiResponse;
+import com.ogani.store.common.dto.common.ApiResponse;
 import com.ogani.store.common.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

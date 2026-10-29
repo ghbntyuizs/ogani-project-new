@@ -15,7 +15,9 @@ public class CategoryMapper {
                 category.getImageUrl(),
                 category.getParent() == null
                         ? null
-                        : category.getParent().getId()
+                        : category.getParent().getId(),
+                category.getSortOrder(),
+                category.getActive()
         );
     }
 }

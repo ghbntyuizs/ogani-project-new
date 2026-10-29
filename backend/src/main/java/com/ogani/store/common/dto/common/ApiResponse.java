@@ -1,4 +1,4 @@
-package com.ogani.store.common.dto;
+package com.ogani.store.common.dto.common;
 
 /** Khuôn response thành công thống nhất: { success, message, data }. */
 public record ApiResponse<T>(boolean success, String message, T data) {

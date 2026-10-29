@@ -2,7 +2,7 @@ package com.ogani.store.catalog;
 
 import com.ogani.store.catalog.entity.Category;
 import com.ogani.store.catalog.repository.CategoryRepository;
-import com.ogani.store.support.AbstractIntegrationTest;
+import com.ogani.store.common.AbstractIntegrationTest;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -103,7 +103,7 @@ class CategoryCreateIT extends AbstractIntegrationTest {
         post(CREATE_URL, ADMIN, body)
                 .andExpect(status().isBadRequest());
 
-        assertFalse(categories.existsBySlug(""));
+        assertFalse(categories.existsBySlugAndActiveTrue(""));
     }
 
     @Test
@@ -158,7 +158,7 @@ class CategoryCreateIT extends AbstractIntegrationTest {
         post(CREATE_URL, ADMIN, body)
                 .andExpect(status().isNotFound());
 
-        assertFalse(categories.existsBySlug("child-category"));
+        assertFalse(categories.existsBySlugAndActiveTrue("child-category"));
     }
 
     @Test
@@ -182,7 +182,7 @@ class CategoryCreateIT extends AbstractIntegrationTest {
         post(CREATE_URL, ADMIN, body)
                 .andExpect(status().isBadRequest());
 
-        assertFalse(categories.existsBySlug("child-of-inactive"));
+        assertFalse(categories.existsBySlugAndActiveTrue("child-of-inactive"));
     }
 
     @Test
@@ -210,6 +210,6 @@ class CategoryCreateIT extends AbstractIntegrationTest {
         post(CREATE_URL, STAFF, body)
                 .andExpect(status().isForbidden());
 
-        assertFalse(categories.existsBySlug("staff-category"));
+        assertFalse(categories.existsBySlugAndActiveTrue("staff-category"));
     }
 }

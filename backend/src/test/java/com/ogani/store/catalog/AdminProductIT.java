@@ -1,6 +1,6 @@
 package com.ogani.store.catalog;
 
-import com.ogani.store.support.AbstractIntegrationTest;
+import com.ogani.store.common.AbstractIntegrationTest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

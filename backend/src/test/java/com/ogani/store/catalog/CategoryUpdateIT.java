@@ -2,7 +2,7 @@ package com.ogani.store.catalog;
 
 import com.ogani.store.catalog.entity.Category;
 import com.ogani.store.catalog.repository.CategoryRepository;
-import com.ogani.store.support.AbstractIntegrationTest;
+import com.ogani.store.common.AbstractIntegrationTest;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
