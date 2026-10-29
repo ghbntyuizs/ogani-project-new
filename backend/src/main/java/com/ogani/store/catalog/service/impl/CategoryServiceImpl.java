@@ -77,6 +77,86 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryMapper.toResponse(saved);
     }
 
+    @Override
+    @Transactional
+    public CategoryResponse update(Integer id, CategoryRequest request) {
+        Category category = categories.findById(id)
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Category"));
+
+        String name = request.name().trim();
+
+        // PUT không truyền slug hoặc truyền chuỗi trắng -> giữ slug cũ.
+        String slug = request.slug() == null || request.slug().isBlank()
+                ? category.getSlug()
+                : SlugUtil.slugify(request.slug());
+
+        if (slug.isBlank()) {
+            throw AppException.withCustomMessage(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Category slug cannot be empty after normalization"
+            );
+        }
+
+        // Cho phép giữ slug hiện tại, chỉ chặn slug của category khác.
+        if (categories.existsBySlugAndIdNot(slug, id)) {
+            throw new AppException(
+                    ErrorCode.RESOURCE_ALREADY_EXISTS,
+                    "Category slug"
+            );
+        }
+
+        Category parent = request.parentId() == null
+                ? null
+                : findValidParent(id, request.parentId());
+
+        category.setName(name);
+        category.setSlug(slug);
+        category.setImageUrl(normalizeOptional(request.imageUrl()));
+        category.setParent(parent);
+        category.setSortOrder(
+                request.sortOrder() == null ? 0 : request.sortOrder()
+        );
+
+        // Không set active ở đây: trạng thái hiện tại được giữ nguyên.
+        Category saved = categories.save(category);
+
+        return categoryMapper.toResponse(saved);
+    }
+
+    private Category findValidParent(Integer categoryId, Integer parentId) {
+        Category parent = categories.findById(parentId)
+                .orElseThrow(() ->
+                        new AppException(
+                                ErrorCode.RESOURCE_NOT_FOUND,
+                                "Parent category"
+                        )
+                );
+
+        if (!Boolean.TRUE.equals(parent.getActive())) {
+            throw AppException.withCustomMessage(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Parent category must be active"
+            );
+        }
+
+        // Không cho category làm parent của chính nó hoặc hậu duệ của nó.
+        Category current = parent;
+
+        while (current != null) {
+            if (current.getId().equals(categoryId)) {
+                throw AppException.withCustomMessage(
+                        ErrorCode.VALIDATION_ERROR,
+                        "Category cannot be its own ancestor"
+                );
+            }
+
+            current = current.getParent();
+        }
+
+        return parent;
+    }
+
     private Category findActiveParent(Integer parentId) {
         Category parent = categories.findById(parentId)
                 .orElseThrow(() ->

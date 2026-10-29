@@ -32,4 +32,16 @@ public class AdminCategoryController {
                 categoryService.create(request)
         );
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<CategoryResponse> update(
+            @PathVariable Integer id,
+            @Valid @RequestBody CategoryRequest request
+    ) {
+        return ApiResponse.ok(
+                "Category updated",
+                categoryService.update(id, request)
+        );
+    }
 }
