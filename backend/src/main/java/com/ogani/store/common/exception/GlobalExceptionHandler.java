@@ -3,6 +3,7 @@ package com.ogani.store.common.exception;
 import com.ogani.store.common.constants.Constant;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -49,6 +50,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessValidationException.class)
     public ResponseEntity<ExceptionResponse> handleBusinessValidationException(BusinessValidationException ex, HttpServletRequest request) {
         return buildResponse(ex.getErrorCode(), ex.getFormattedMessage(), ex.getDetails());
+    }
+
+    /**
+     * Vi phạm ràng buộc DB (unique slug/sku khi 2 request đồng thời, FK...).
+     * Check "exists" ở service không chặn được race condition nên DB là lớp bảo vệ cuối;
+     * trả 409 thay vì 500 và không lộ chi tiết SQL ra client.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ExceptionResponse> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
+        log.warn("Data integrity violation at {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMostSpecificCause().getMessage());
+        return buildResponse(ErrorCode.RESOURCE_ALREADY_EXISTS, "Data conflicts with an existing record", null);
     }
 
     // ---------- Validation / request sai ----------

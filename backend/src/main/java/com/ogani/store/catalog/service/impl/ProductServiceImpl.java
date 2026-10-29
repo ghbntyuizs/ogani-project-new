@@ -119,7 +119,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = mapper.toEntity(request);
         product.setSlug(slug);
         product.setSalePrice(request.salePrice());
-        product.setCategory(findCategory(request.categoryId()));
+        product.setCategory(findActiveCategory(request.categoryId()));
 
         return mapper.toResponse(products.save(product));
     }
@@ -167,7 +167,7 @@ public class ProductServiceImpl implements ProductService {
                 .equals(request.categoryId())) {
 
             product.setCategory(
-                    findCategory(request.categoryId())
+                    findActiveCategory(request.categoryId())
             );
         }
 
@@ -212,6 +212,20 @@ public class ProductServiceImpl implements ProductService {
                         ErrorCode.RESOURCE_NOT_FOUND,
                         "Product"
                 ));
+    }
+
+    /** Sản phẩm chỉ được gán vào category đang active (category đã xóa mềm thì không). */
+    private Category findActiveCategory(Integer id) {
+        Category category = findCategory(id);
+
+        if (!Boolean.TRUE.equals(category.getActive())) {
+            throw AppException.withCustomMessage(
+                    ErrorCode.VALIDATION_ERROR,
+                    "Category must be active"
+            );
+        }
+
+        return category;
     }
 
     private Category findCategory(Integer id) {
