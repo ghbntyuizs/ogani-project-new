@@ -10,4 +10,6 @@ public interface CategoryService {
     List<CategoryResponse> list();
 
     CategoryResponse create(CategoryRequest request);
+
+    CategoryResponse update(Integer id, CategoryRequest request);
 }
