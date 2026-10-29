@@ -3,7 +3,7 @@ package com.ogani.store.catalog.controller.adminController;
 import com.ogani.store.catalog.dto.request.category.CategoryRequest;
 import com.ogani.store.catalog.dto.response.category.CategoryResponse;
 import com.ogani.store.catalog.service.interfaces.CategoryService;
-import com.ogani.store.common.dto.ApiResponse;
+import com.ogani.store.common.dto.common.ApiResponse;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/categories")
@@ -51,5 +53,18 @@ public class AdminCategoryController {
     public ApiResponse<Void> delete(@PathVariable Integer id) {
         categoryService.delete(id);
         return ApiResponse.ok("Category deleted", null);
+    }
+
+
+    @GetMapping
+    public ApiResponse<List<CategoryResponse>> list() {
+        return ApiResponse.ok(categoryService.adminList());
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<CategoryResponse> getById(
+            @PathVariable Integer id
+    ) {
+        return ApiResponse.ok(categoryService.getById(id));
     }
 }

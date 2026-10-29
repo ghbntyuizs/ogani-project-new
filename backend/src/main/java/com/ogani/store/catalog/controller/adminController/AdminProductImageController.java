@@ -4,7 +4,7 @@ import com.ogani.store.catalog.dto.request.product.ProductImageOrderRequest;
 import com.ogani.store.catalog.dto.request.product.ProductImageRequest;
 import com.ogani.store.catalog.dto.response.product.ProductImageResponse;
 import com.ogani.store.catalog.service.interfaces.ProductImageService;
-import com.ogani.store.common.dto.ApiResponse;
+import com.ogani.store.common.dto.common.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

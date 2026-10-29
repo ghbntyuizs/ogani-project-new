@@ -1,4 +1,4 @@
-package com.ogani.store.support;
+package com.ogani.store.common;
 
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Tag;
@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Nền chung cho integration test (chạy bằng `mvn verify` hoặc bấm chạy trong IntelliJ).
- *
  * - Chạy trên Postgres LOCAL, database riêng `ogani_store_test` (cấu hình ở src/test/resources/application-test.yml),
  *   tách khỏi database dev `ogani_store` nên không đụng dữ liệu bạn đang dùng. Không cần Docker.
  * - Flyway tự chạy V1..V3 ở lần đầu nên có sẵn seed data (users, 12 sản phẩm, 3 ảnh của sản phẩm id=1...).

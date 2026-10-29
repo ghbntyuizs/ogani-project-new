@@ -3,6 +3,7 @@ package com.ogani.store.catalog.service.impl;
 import com.ogani.store.catalog.dto.request.category.CategoryRequest;
 import com.ogani.store.catalog.dto.response.category.CategoryResponse;
 import com.ogani.store.catalog.entity.Category;
+import com.ogani.store.catalog.entity.ProductStatus;
 import com.ogani.store.catalog.mapper.CategoryMapper;
 import com.ogani.store.catalog.repository.CategoryRepository;
 import com.ogani.store.catalog.repository.ProductRepository;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -53,10 +55,10 @@ public class CategoryServiceImpl implements CategoryService {
             );
         }
 
-        if (categories.existsBySlug(slug)) {
-            throw new AppException(
+        if (categories.existsBySlugAndActiveTrue(slug)) {
+            throw AppException.withCustomMessage(
                     ErrorCode.RESOURCE_ALREADY_EXISTS,
-                    "Category slug"
+                    "Category slug already exists"
             );
         }
 
@@ -100,14 +102,12 @@ public class CategoryServiceImpl implements CategoryService {
             );
         }
 
-        // Cho phép giữ slug hiện tại, chỉ chặn slug của category khác.
-        if (categories.existsBySlugAndIdNot(slug, id)) {
+        if (categories.existsBySlugAndActiveTrueAndIdNot(slug, id)) {
             throw new AppException(
                     ErrorCode.RESOURCE_ALREADY_EXISTS,
                     "Category slug"
             );
         }
-
         Category parent = request.parentId() == null
                 ? null
                 : findValidParent(id, request.parentId());
@@ -116,10 +116,9 @@ public class CategoryServiceImpl implements CategoryService {
         category.setSlug(slug);
         category.setImageUrl(normalizeOptional(request.imageUrl()));
         category.setParent(parent);
-        category.setSortOrder(
-                request.sortOrder() == null ? 0 : request.sortOrder()
-        );
-
+        if (request.sortOrder() != null) {
+            category.setSortOrder(request.sortOrder());
+        }
         // Không set active ở đây: trạng thái hiện tại được giữ nguyên.
         Category saved = categories.save(category);
 
@@ -138,10 +137,11 @@ public class CategoryServiceImpl implements CategoryService {
             return;
         }
 
-        if (products.existsByCategory_Id(id)) {
+        if (products.existsByCategory_IdAndStatusNot(
+                id, ProductStatus.HIDDEN)) {
             throw AppException.withCustomMessage(
-                    ErrorCode.VALIDATION_ERROR,
-                    "Cannot delete category because products still reference it"
+                    ErrorCode.RESOURCE_ALREADY_EXISTS,
+                    "Cannot delete category because it still contains products that are not hidden"
             );
         }
 
@@ -156,6 +156,28 @@ public class CategoryServiceImpl implements CategoryService {
         categories.save(category);
     }
 
+    @Override
+    public List<CategoryResponse> adminList() {
+        return categories.findAll()
+                .stream()
+                .sorted(Comparator.comparing(
+                        Category::getSortOrder,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ))
+                .map(categoryMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public CategoryResponse getById(Integer id) {
+        Category category = categories.findById(id)
+                .orElseThrow(() -> new AppException(
+                ErrorCode.RESOURCE_NOT_FOUND,
+                "Category"
+        ));
+
+        return categoryMapper.toResponse(category);
+    }
     private Category findValidParent(Integer categoryId, Integer parentId) {
         Category parent = categories.findById(parentId)
                 .orElseThrow(() ->

@@ -14,4 +14,8 @@ public interface CategoryService {
     CategoryResponse update(Integer id, CategoryRequest request);
 
     void delete(Integer id);
+
+    List<CategoryResponse> adminList();
+
+    CategoryResponse getById(Integer id);
 }
