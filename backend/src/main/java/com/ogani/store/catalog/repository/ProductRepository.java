@@ -9,6 +9,9 @@ import com.ogani.store.catalog.entity.*;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     Optional<Product> findBySlug(String slug);
+
     boolean existsBySlug(String slug);
+
     boolean existsBySku(String sku);
-}
+
+    boolean existsByCategory_Id(Integer categoryId);}

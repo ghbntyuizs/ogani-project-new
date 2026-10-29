@@ -15,4 +15,5 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     boolean existsBySlugAndIdNot(String slug, Integer id);
 
+    boolean existsByParent_IdAndActiveTrue(Integer parentId);
 }
