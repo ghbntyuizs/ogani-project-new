@@ -28,6 +28,7 @@ public enum ErrorCode {
     // === 4. Resource / Data Not Found or Conflicts ===
     RESOURCE_NOT_FOUND("%s not found", HttpStatus.NOT_FOUND),
     RESOURCE_ALREADY_EXISTS("%s already exists", HttpStatus.CONFLICT),
+    CONCURRENT_MODIFICATION("Record changed; reload and try again", HttpStatus.CONFLICT),
     METHOD_NOT_ALLOWED("HTTP method is not supported for this endpoint", HttpStatus.METHOD_NOT_ALLOWED),
 
     // === 5. System & Uncategorized ===

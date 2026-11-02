@@ -4,6 +4,8 @@ import com.ogani.store.catalog.dto.ProductFilter;
 import com.ogani.store.catalog.dto.ProductSort;
 import com.ogani.store.catalog.dto.request.product.ProductRequest;
 import com.ogani.store.catalog.dto.response.product.ProductResponse;
+import com.ogani.store.catalog.dto.response.product.ProductListResponse;
+import com.ogani.store.catalog.repository.ProductListView;
 import com.ogani.store.catalog.entity.Category;
 import com.ogani.store.catalog.entity.Product;
 import com.ogani.store.catalog.entity.ProductImage;
@@ -18,9 +20,9 @@ import com.ogani.store.common.dto.PageResponse;
 import com.ogani.store.common.exception.AppException;
 import com.ogani.store.common.exception.ErrorCode;
 import com.ogani.store.common.util.SlugUtil;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,21 +36,24 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categories;
     private final ProductImageRepository images;
     private final ProductMapper mapper;
+    private final ManagedUploadService uploads;
 
     public ProductServiceImpl(
             ProductRepository products,
             CategoryRepository categories,
             ProductImageRepository images,
-            ProductMapper mapper
+            ProductMapper mapper,
+            ManagedUploadService uploads
     ) {
         this.products = products;
         this.categories = categories;
         this.images = images;
         this.mapper = mapper;
+        this.uploads = uploads;
     }
 
     @Override
-    public PageResponse<ProductResponse> search(
+    public PageResponse<ProductListResponse> search(
             ProductFilter filter,
             ProductSort sort,
             int page,
@@ -58,15 +63,17 @@ public class ProductServiceImpl implements ProductService {
         PageRequest pageable = PageRequest.of(
                 Math.max(page, 0),
                 Math.min(Math.max(size, 1), MAX_PAGE_SIZE),
-                sort.sort()
+                sort == ProductSort.PRICE_ASC || sort == ProductSort.PRICE_DESC
+                        ? Sort.unsorted()
+                        : sort.sort().and(Sort.by("id"))
         );
 
-        Page<Product> result = products.findAll(
-                ProductSpecifications.from(filter, publicView),
-                pageable
+        Page<ProductListView> result = products.findBy(
+                ProductSpecifications.from(filter, publicView, sort),
+                query -> query.as(ProductListView.class).page(pageable)
         );
 
-        return PageResponse.of(result.map(mapper::toResponse));
+        return PageResponse.of(result.map(mapper::toListResponse));
     }
 
     @Override
@@ -120,6 +127,7 @@ public class ProductServiceImpl implements ProductService {
         product.setSlug(slug);
         product.setSalePrice(request.salePrice());
         product.setCategory(findActiveCategory(request.categoryId()));
+        uploads.claim(product.getThumbnailUrl());
 
         return mapper.toResponse(products.save(product));
     }
@@ -133,6 +141,14 @@ public class ProductServiceImpl implements ProductService {
         validate(request);
 
         Product product = find(id);
+
+        if (request.version() == null) {
+            throw AppException.withCustomMessage(ErrorCode.VALIDATION_ERROR,
+                    "Product version is required; reload the product before saving");
+        }
+        if (!request.version().equals(product.getVersion())) {
+            throw new AppException(ErrorCode.CONCURRENT_MODIFICATION);
+        }
 
         if (!product.getSku().equals(request.sku())
                 && products.existsBySku(request.sku())) {
@@ -186,6 +202,8 @@ public class ProductServiceImpl implements ProductService {
                 .map(ProductImage::getImageUrl)
                 .ifPresent(product::setThumbnailUrl);
 
+        uploads.claim(product.getThumbnailUrl());
+        products.flush();
         return mapper.toResponse(product);
     }
 

@@ -2,8 +2,6 @@
 package com.ogani.store.order.service.impl;
 
 import com.ogani.store.catalog.entity.Product;
-import com.ogani.store.common.exception.AppException;
-import com.ogani.store.common.exception.ErrorCode;
 import com.ogani.store.order.dto.response.CartItemResponse;
 import com.ogani.store.order.dto.response.CartResponse;
 import com.ogani.store.order.entity.Cart;
@@ -12,8 +10,6 @@ import com.ogani.store.order.repository.CartItemRepository;
 import com.ogani.store.order.repository.CartRepository;
 import com.ogani.store.order.service.interfaces.CartService;
 import com.ogani.store.security.UserPrincipal;
-import com.ogani.store.user.entity.User;
-import com.ogani.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,35 +21,25 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository carts;
     private final CartItemRepository cartItems;
-    private final UserRepository users;
 
     public CartServiceImpl(
             CartRepository carts,
-            CartItemRepository cartItems,
-            UserRepository users) {
+            CartItemRepository cartItems) {
         this.carts = carts;
         this.cartItems = cartItems;
-        this.users = users;
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public CartResponse getCart(UserPrincipal principal) {
         Long userId = principal.getId();
 
-        // 1. Find the cart; if it doesn't exist, create an empty cart.
-        Cart cart = carts.findByUserId(userId)
-                .orElseGet(() -> {
-                    // Token hợp lệ nhưng user không còn trong DB.
-                    User user = users.findById(userId)
-                            .orElseThrow(() ->
-                                    new AppException(ErrorCode.UNAUTHENTICATED));
-
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-
-                    return carts.save(newCart);
-                });
+        // Read an existing cart, or return an empty view without creating records.
+        Cart cart = carts.findByUserId(userId).orElse(null);
+        if (cart == null) {
+            return new CartResponse(null, List.of(), BigDecimal.ZERO, null,
+                    BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
 
         // 2. Get the cart items.
         List<CartItem> entities =

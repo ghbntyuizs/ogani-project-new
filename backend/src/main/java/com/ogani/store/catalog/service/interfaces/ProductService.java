@@ -4,11 +4,12 @@ import com.ogani.store.catalog.dto.ProductFilter;
 import com.ogani.store.catalog.dto.ProductSort;
 import com.ogani.store.catalog.dto.request.product.ProductRequest;
 import com.ogani.store.catalog.dto.response.product.ProductResponse;
+import com.ogani.store.catalog.dto.response.product.ProductListResponse;
 import com.ogani.store.common.dto.PageResponse;
 
 public interface ProductService {
 
-    PageResponse<ProductResponse> search(
+    PageResponse<ProductListResponse> search(
             ProductFilter filter,
             ProductSort sort,
             int page,

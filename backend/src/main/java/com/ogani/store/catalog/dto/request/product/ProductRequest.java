@@ -21,4 +21,5 @@ public record ProductRequest(
         @Size(max = 255) String shippingInfo,
         @Size(max = 255) String thumbnailUrl,
         ProductStatus status,
-        Boolean featured) {}
+        Boolean featured,
+        @Min(0) Long version) {}

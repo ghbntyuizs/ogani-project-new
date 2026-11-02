@@ -2,6 +2,8 @@ package com.ogani.store.catalog.mapper;
 
 import com.ogani.store.catalog.dto.request.product.ProductRequest;
 import com.ogani.store.catalog.dto.response.product.ProductResponse;
+import com.ogani.store.catalog.dto.response.product.ProductListResponse;
+import com.ogani.store.catalog.repository.ProductListView;
 import com.ogani.store.catalog.entity.Product;
 import com.ogani.store.catalog.entity.ProductStatus;
 import org.mapstruct.*;
@@ -20,6 +22,13 @@ public interface ProductMapper {
     @Mapping(target = "inStock", expression = "java(p.getStockQuantity() != null && p.getStockQuantity() > 0 && p.getStatus() == ProductStatus.ACTIVE)")
     ProductResponse toResponse(Product p);
 
+    @Mapping(target = "categoryId", source = "category.id")
+    @Mapping(target = "categoryName", source = "category.name")
+    @Mapping(target = "onSale", expression = "java(p.getSalePrice() != null)")
+    @Mapping(target = "discountPercent", expression = "java(discountPercent(p.getPrice(), p.getSalePrice()))")
+    @Mapping(target = "inStock", expression = "java(p.getStockQuantity() != null && p.getStockQuantity() > 0 && p.getStatus() == ProductStatus.ACTIVE)")
+    ProductListResponse toListResponse(ProductListView p);
+
     /** category / các cột hệ thống (version, rating, sold...) KHÔNG map từ request. */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
@@ -33,8 +42,12 @@ public interface ProductMapper {
     void update(ProductRequest r, @MappingTarget Product p);
 
     default Integer discountPercent(Product p) {
-        if (p.getSalePrice() == null || p.getPrice() == null || p.getPrice().signum() <= 0) return null;
-        return BigDecimal.ONE.subtract(p.getSalePrice().divide(p.getPrice(), 4, RoundingMode.HALF_UP))
+        return discountPercent(p.getPrice(), p.getSalePrice());
+    }
+
+    default Integer discountPercent(BigDecimal price, BigDecimal salePrice) {
+        if (salePrice == null || price == null || price.signum() <= 0) return null;
+        return BigDecimal.ONE.subtract(salePrice.divide(price, 4, RoundingMode.HALF_UP))
                 .multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.HALF_UP).intValue();
     }
 }

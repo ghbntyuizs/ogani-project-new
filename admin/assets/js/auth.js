@@ -1,61 +1,24 @@
-/* 
-========================================================================
-   BOOTSTRAP 5 ADMIN TEMPLATE - SPARK ADMIN
-   AUTHENTICATION MODULE JAVASCRIPT
-   Developed with premium UI/UX standards
-
-   Template Name: Spark Admin
-   Version: 1.0 
-   Author: Ogani Admin (based on Spark Admin, MIT) 
-   Email: hello.sparkadmin@gmail.com
-   URL: https://sparkadmin.web.id
-========================================================================
-*/
-
 document.addEventListener('DOMContentLoaded', function () {
-    /**
-     * Password Visibility Toggle Logic
-     * Enables toggling password input between obscured dots and plain text.
-     */
-    const togglePassword = document.getElementById('toggle-password');
-    const passwordInput = document.getElementById('password');
-
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function () {
-            // Toggle input type attribute
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Toggle eye icon class & aria-label
-            const icon = this.querySelector('i');
-            if (type === 'text') {
-                if (icon) {
-                    icon.classList.remove('bi-eye');
-                    icon.classList.add('bi-eye-slash');
-                }
-                this.setAttribute('aria-label', 'Hide password');
-            } else {
-                if (icon) {
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
-                }
-                this.setAttribute('aria-label', 'Show password');
-            }
-        });
-    }
-
-    /**
-     * Client-Side Form Validation Logic
-     * Prevents submission if form inputs are invalid and applies Bootstrap validation styles.
-     */
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function (event) {
-            if (!loginForm.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            loginForm.classList.add('was-validated');
-        });
-    }
+  const form = document.getElementById('loginForm');
+  const password = document.getElementById('password');
+  document.getElementById('toggle-password')?.addEventListener('click', function () {
+    password.type = password.type === 'password' ? 'text' : 'password';
+    this.setAttribute('aria-label', password.type === 'password' ? 'Show password' : 'Hide password');
+  });
+  document.getElementById('rememberMe')?.closest('label')?.remove();
+  document.querySelector('.forgot-password-link')?.remove();
+  const error = document.createElement('div');
+  error.className = 'alert alert-danger'; error.hidden = true; error.setAttribute('role', 'alert');
+  form.prepend(error);
+  form.removeAttribute('action'); form.removeAttribute('method');
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); error.hidden = true; form.classList.add('was-validated');
+    if (!form.checkValidity()) return;
+    const button = form.querySelector('[type=submit]'); button.disabled = true;
+    try {
+      await OganiAPI.login(document.getElementById('email').value.trim(), password.value);
+      location.replace('products.html');
+    } catch (failure) { error.textContent = failure.message; error.hidden = false; }
+    finally { button.disabled = false; }
+  });
 });

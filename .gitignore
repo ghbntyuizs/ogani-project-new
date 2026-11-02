@@ -8,6 +8,10 @@
 
 # Local config and secrets
 .env
+uploads/
+backend/uploads/
+backend/*-run.log
+backend/baseline-test.log
 
 # OS
 .DS_Store

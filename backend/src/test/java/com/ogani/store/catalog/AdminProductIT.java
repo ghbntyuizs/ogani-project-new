@@ -1,7 +1,11 @@
 package com.ogani.store.catalog;
 
+import com.jayway.jsonpath.JsonPath;
 import com.ogani.store.common.AbstractIntegrationTest;
 import jakarta.persistence.EntityManager;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,7 +35,7 @@ class AdminProductIT extends AbstractIntegrationTest {
                 ADMIN
         ).andReturn().getResponse().getContentAsString();
 
-        return com.jayway.jsonpath.JsonPath.read(
+        return JsonPath.read(
                 json,
                 "$.data.thumbnailUrl"
         );
@@ -236,7 +240,7 @@ class AdminProductIT extends AbstractIntegrationTest {
         @Test
         @DisplayName("Gallery có ảnh -> PUT product không ghi đè thumbnail")
         void updatingProduct_doesNotOverrideGalleryThumbnail() throws Exception {
-            String before = com.jayway.jsonpath.JsonPath.read(
+            String before = JsonPath.read(
                     get("/api/admin/products/1", ADMIN)
                             .andReturn()
                             .getResponse()
@@ -304,7 +308,7 @@ class AdminProductIT extends AbstractIntegrationTest {
         @DisplayName("Xoá KHÔNG làm mất order_items cũ (lý do chuyển sang soft delete)")
         void doesNotTouchOrderItems() throws Exception {
             Integer before = jdbc.queryForObject("SELECT COUNT(*) FROM order_items WHERE product_id = 1", Integer.class);
-            org.junit.jupiter.api.Assertions.assertTrue(before != null && before > 0, "seed phải có order_items của sản phẩm 1");
+            Assertions.assertTrue(before != null && before > 0, "seed phải có order_items của sản phẩm 1");
 
             delete("/api/admin/products/1", ADMIN).andExpect(status().isOk());
             em.flush(); // đẩy UPDATE (hoặc DELETE nếu ai đó lỡ đổi lại thành hard delete) xuống DB trước khi đếm
@@ -390,10 +394,12 @@ class AdminProductIT extends AbstractIntegrationTest {
             String json = get("/api/products?sort=price_asc&size=100", ANONYMOUS)
                     .andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
-            java.util.List<Number> prices = com.jayway.jsonpath.JsonPath.read(json, "$.data.content[*].price");
-            org.junit.jupiter.api.Assertions.assertTrue(prices.size() > 1);
+            List<Map<String, Object>> content = JsonPath.read(json, "$.data.content");
+            List<Number> prices = content.stream()
+                    .map(p -> (Number) (p.get("salePrice") != null ? p.get("salePrice") : p.get("price"))).toList();
+            Assertions.assertTrue(prices.size() > 1);
             for (int i = 1; i < prices.size(); i++) {
-                org.junit.jupiter.api.Assertions.assertTrue(
+                Assertions.assertTrue(
                         prices.get(i - 1).doubleValue() <= prices.get(i).doubleValue(),
                         "giá phải tăng dần tại vị trí " + i);
             }

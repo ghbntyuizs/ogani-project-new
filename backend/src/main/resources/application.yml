@@ -1,4 +1,10 @@
 spring:
+  profiles:
+    active: local
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   application:
     name: ogani-store
   datasource:
@@ -19,7 +25,7 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:change-me-please-use-at-least-32-characters-long-secret}
+    secret: ${JWT_SECRET:}
     access-ttl-minutes: 15
     refresh-ttl-days: 7
   cors:

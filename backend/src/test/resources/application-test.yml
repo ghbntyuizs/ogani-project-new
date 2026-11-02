@@ -6,3 +6,9 @@ spring:
     url: ${TEST_DB_URL:jdbc:postgresql://localhost:5432/ogani_store_test}
     username: ${TEST_DB_USER:postgres}
     password: ${TEST_DB_PASSWORD:${DB_PASSWORD:postgres}}
+
+app:
+  maintenance:
+    enabled: false
+  jwt:
+    secret: test-only-secret-not-for-deployment-123456789

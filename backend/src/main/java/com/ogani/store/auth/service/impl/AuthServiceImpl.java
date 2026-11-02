@@ -14,16 +14,10 @@ import com.ogani.store.security.UserPrincipal;
 import com.ogani.store.user.entity.RefreshToken;
 import com.ogani.store.user.entity.Role;
 import com.ogani.store.user.entity.User;
+import com.ogani.store.user.entity.UserStatus;
 import com.ogani.store.user.repository.RefreshTokenRepository;
 import com.ogani.store.user.repository.RoleRepository;
 import com.ogani.store.user.repository.UserRepository;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,6 +26,11 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Locale;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -122,8 +121,12 @@ public class AuthServiceImpl implements AuthService {
                 );
 
         if (t.getRevoked()
-                || t.getExpiresAt().isBefore(LocalDateTime.now())) {
+                || !t.getExpiresAt().isAfter(LocalDateTime.now())) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+
+        if (t.getUser().getStatus() != UserStatus.ACTIVE) {
+            throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
 
         t.setRevoked(true);

@@ -1,11 +1,11 @@
 package com.ogani.store.catalog;
 
+import com.jayway.jsonpath.JsonPath;
 import com.ogani.store.common.AbstractIntegrationTest;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,7 +43,7 @@ class ProductImageIT extends AbstractIntegrationTest {
                 ADMIN
         ).andReturn().getResponse().getContentAsString();
 
-        return com.jayway.jsonpath.JsonPath.read(
+        return JsonPath.read(
                 json,
                 "$.data.thumbnailUrl"
         );
@@ -55,7 +55,7 @@ class ProductImageIT extends AbstractIntegrationTest {
                 ADMIN
         ).andReturn().getResponse().getContentAsString();
 
-        return com.jayway.jsonpath.JsonPath.read(
+        return JsonPath.read(
                 json,
                 "$.data[*].imageUrl"
         );

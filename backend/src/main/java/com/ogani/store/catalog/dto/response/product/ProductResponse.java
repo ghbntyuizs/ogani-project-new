@@ -13,4 +13,5 @@ public record ProductResponse(
         BigDecimal weightValue, WeightUnit weightUnit,
         Integer stockQuantity, boolean inStock,
         String shippingInfo, String thumbnailUrl, ProductStatus status, Boolean featured,
-        BigDecimal avgRating, Integer reviewCount, Integer soldCount, LocalDateTime createdAt) {}
+        BigDecimal avgRating, Integer reviewCount, Integer soldCount, LocalDateTime createdAt,
+        Long version) {}
