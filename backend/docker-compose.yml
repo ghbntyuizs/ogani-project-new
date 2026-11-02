@@ -22,8 +22,13 @@ services:
       DB_URL: jdbc:postgresql://db:5432/ogani_store
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      JWT_SECRET: ${JWT_SECRET:-change-me-please-use-at-least-32-characters-long-secret}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to a random secret of at least 32 characters}
+      APP_UPLOAD_DIRECTORY: /app/uploads
+      APP_UPLOAD_PUBLIC_ORIGIN: ${UPLOAD_PUBLIC_ORIGIN:-http://localhost:8080}
+    volumes:
+      - uploads_data:/app/uploads
     ports: ["8080:8080"]
 
 volumes:
   db_data:
+  uploads_data:

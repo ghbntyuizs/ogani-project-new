@@ -1,6 +1,8 @@
 package com.ogani.store.common;
 
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.InvalidJsonException;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +46,8 @@ public abstract class AbstractIntegrationTest {
 
     @Autowired
     protected MockMvc mvc;
+    @Autowired
+    private EntityManager testEntityManager;
 
     // ---------- helper gửi request: truyền email để đăng nhập, hoặc ANONYMOUS để không gửi token ----------
 
@@ -52,15 +56,43 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected ResultActions post(String url, String as, String body) throws Exception {
-        return send(MockMvcRequestBuilders.post(url).contentType(MediaType.APPLICATION_JSON).content(body), as);
+        return sendWrite(MockMvcRequestBuilders.post(url).contentType(MediaType.APPLICATION_JSON).content(body), as, url);
     }
 
     protected ResultActions put(String url, String as, String body) throws Exception {
-        return send(MockMvcRequestBuilders.put(url).contentType(MediaType.APPLICATION_JSON).content(body), as);
+        // Product writes now follow the same read-then-edit version contract as the UI.
+        // Explicit version fields are preserved so stale-version tests remain meaningful.
+        if (url.matches("/api/admin/products/\\d+") && (ADMIN.equals(as) || STAFF.equals(as))
+                && !body.contains("\"version\"")) {
+            try {
+                var document = JsonPath.parse(body);
+                var response = get(url, as).andReturn().getResponse();
+                if (response.getStatus() == 200) {
+                    Number version = JsonPath.read(response.getContentAsString(), "$.data.version");
+                    body = document.put("$", "version", version).jsonString();
+                }
+            } catch (InvalidJsonException ignored) {
+                // Malformed JSON tests must still reach the controller unchanged.
+            }
+        }
+        return sendWrite(MockMvcRequestBuilders.put(url).contentType(MediaType.APPLICATION_JSON).content(body), as, url);
     }
 
     protected ResultActions delete(String url, String as) throws Exception {
-        return send(MockMvcRequestBuilders.delete(url), as);
+        return sendWrite(MockMvcRequestBuilders.delete(url), as, url);
+    }
+
+    private ResultActions sendWrite(MockHttpServletRequestBuilder request, String as, String url) throws Exception {
+        if (url.matches("/api/admin/products/\\d+/images(?:/.*)?") && (ADMIN.equals(as) || STAFF.equals(as))) {
+            // Tests share one rollback transaction across requests. Flush preceding writes
+            // as their separate HTTP transactions would before reading the next version.
+            if (testEntityManager.isJoinedToTransaction()) testEntityManager.flush();
+            String productUrl = url.substring(0, url.indexOf("/images"));
+            var response = get(productUrl, as).andReturn().getResponse();
+            Number version = response.getStatus() == 200 ? JsonPath.read(response.getContentAsString(), "$.data.version") : 0;
+            request.header("If-Match", version);
+        }
+        return send(request, as);
     }
 
     /** Gửi với token KHÔNG hợp lệ (để test 401). */

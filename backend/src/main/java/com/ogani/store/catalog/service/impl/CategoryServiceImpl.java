@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -26,6 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categories;
     private final CategoryMapper categoryMapper;
     private final ProductRepository products;
+    private final ManagedUploadService uploads;
 
     @Override
     public List<CategoryResponse> list() {
@@ -70,6 +70,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(name);
         category.setSlug(slug);
         category.setImageUrl(normalizeOptional(request.imageUrl()));
+        uploads.claim(category.getImageUrl());
         category.setParent(parent);
         category.setSortOrder(
                 request.sortOrder() == null ? 0 : request.sortOrder()
@@ -115,6 +116,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(name);
         category.setSlug(slug);
         category.setImageUrl(normalizeOptional(request.imageUrl()));
+        uploads.claim(category.getImageUrl());
         category.setParent(parent);
         if (request.sortOrder() != null) {
             category.setSortOrder(request.sortOrder());
@@ -158,12 +160,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponse> adminList() {
-        return categories.findAll()
+        return categories.findAllByOrderBySortOrderAscIdAsc()
                 .stream()
-                .sorted(Comparator.comparing(
-                        Category::getSortOrder,
-                        Comparator.nullsLast(Comparator.naturalOrder())
-                ))
                 .map(categoryMapper::toResponse)
                 .toList();
     }

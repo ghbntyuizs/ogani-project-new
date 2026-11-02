@@ -2,8 +2,15 @@ package com.ogani.store.common.exception;
 
 import com.ogani.store.common.constants.Constant;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,17 +21,12 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Điểm DUY NHẤT tạo error response. Lỗi ở filter chain (401/403) cũng được
@@ -33,6 +35,23 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ExceptionResponse> handleMissingHeader(MissingRequestHeaderException ex) {
+        return buildResponse(ErrorCode.VALIDATION_ERROR, "Required header is missing: " + ex.getHeaderName(), null);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ExceptionResponse> handleOptimisticConflict(
+            OptimisticLockingFailureException ex) {
+        return buildResponse(ErrorCode.CONCURRENT_MODIFICATION, ErrorCode.CONCURRENT_MODIFICATION.getMessage(), null);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ExceptionResponse> handleUploadTooLarge(
+            MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(413).body(ExceptionResponse.builder()
+                .code(413).status("Payload Too Large").message("Image must be at most 5 MB").build());
+    }
 
     // ---------- Fallback ----------
     @ExceptionHandler(Exception.class)

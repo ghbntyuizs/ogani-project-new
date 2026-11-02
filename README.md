@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Ogani Food Store
 
 An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, with a storefront based on the
@@ -7,7 +6,8 @@ An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, 
 (shop grid, product details, cart, checkout, blog, contact).
 
 > **Status: work in progress.** The database, entities, authentication and the catalog API are done and tested.
-> The storefront is not wired to the API yet. See the [roadmap](#roadmap).
+> Admin login, categories, products and image gallery are connected to the API. Other admin pages are marked as previews.
+> The customer storefront source is absent from this checkout. See the [roadmap](#roadmap).
 
 <!-- Add screenshots here, e.g. ![Admin dashboard](docs/screenshots/admin-dashboard.png) -->
 
@@ -22,9 +22,11 @@ An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, 
 - Consistent JSON responses and centralized error handling (400 with field errors, 401, 403, 404, 409)
 - Optimistic locking on products (`@Version`), as the base for safe stock deduction at checkout
 - Database versioning with Flyway, OpenAPI / Swagger UI
-- Unit tests and a Testcontainers integration test that runs the real migrations on PostgreSQL
+- Unit tests and integration tests against a dedicated PostgreSQL database
+- Admin category CRUD, product gallery operations and validated local PNG/JPEG uploads
+- Read-only cart API (reading an empty cart does not create database records)
 
-**Designed in the database, API still to build:** cart, coupons, checkout and orders (with status history),
+**Designed in the database, API still to build:** cart mutations, coupons, checkout and orders (with status history),
 product reviews, wishlist, customer addresses, blog (posts, tags, comments), banners, contact messages,
 newsletter, store settings. JPA entities for all of them already exist.
 
@@ -37,9 +39,9 @@ newsletter, store settings. JPA entities for all of them already exist.
 | Security | Spring Security 7, JWT (jjwt) |
 | Mapping / validation | MapStruct, Bean Validation |
 | API docs | springdoc-openapi (Swagger UI) |
-| Testing | JUnit 5, Mockito, Spring MockMvc, Testcontainers |
+| Testing | JUnit 5, Mockito, Spring MockMvc, dedicated PostgreSQL test database |
 | Tooling | Maven, Docker / Docker Compose, GitHub Actions |
-| Frontend | HTML/CSS/JS: Ogani storefront, Spark admin (static) |
+| Frontend | Bootstrap HTML/CSS/JS admin, shared fetch client and per-tab session |
 
 ## Project structure
 
@@ -47,8 +49,7 @@ newsletter, store settings. JPA entities for all of them already exist.
 ogani-food-store/
 ├── backend/     Spring Boot application (package-by-module: common, security, auth, user, catalog, order, content)
 ├── database/    PostgreSQL schema and seed (reference copies; Flyway migrations in backend/ are the source of truth)
-├── admin/       Admin dashboard (Spark Admin adapted for the store; static HTML, sample data)
-├── frontend/    Ogani storefront template (to be wired to the API)
+├── admin/       Admin UI; auth/catalog use real APIs, other pages are previews
 └── .github/     CI workflow
 ```
 
@@ -90,15 +91,15 @@ Design notes: `order_items` and `orders` keep a **snapshot** of price, product n
 
 ## Getting started
 
-**Requirements:** JDK 17+, Maven 3.9+, PostgreSQL (pgAdmin 4 optional). Docker is only needed for integration tests or if you do not have PostgreSQL.
+**Requirements:** JDK 17+, Maven 3.9+, PostgreSQL (pgAdmin 4 optional). Docker is optional if PostgreSQL is installed locally.
 
 1. Create an **empty** database named `ogani_store` (in pgAdmin: *Databases → Create → Database…*).
-2. Set the connection through environment variables (defaults: `localhost:5432`, user `postgres`, password `postgres`):
+2. Set the connection through environment variables (defaults: `localhost:5432`, user `postgres`; set `DB_PASSWORD` explicitly):
    ```bash
    # Linux / macOS
-   DB_PASSWORD=your-password mvn -f backend/pom.xml spring-boot:run
+   DB_PASSWORD=your-password mvn -f backend/pom.xml spring-boot:run -Dspring-boot.run.profiles=local
    # PowerShell
-   $env:DB_PASSWORD="your-password"; mvn -f backend/pom.xml spring-boot:run
+   $env:DB_PASSWORD="your-password"; mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.profiles=local"
    ```
    Other variables: `DB_URL`, `DB_USER`, `JWT_SECRET` (use a random string of at least 32 characters outside local development).
 3. Flyway creates the tables and sample data on first start. Open **http://localhost:8080/swagger-ui.html**.
@@ -107,7 +108,53 @@ No local PostgreSQL? `docker compose -f backend/docker-compose.yml up db` starts
 
 **Sample accounts** (password `123456`): `admin@ogani.local` (ADMIN), `staff@ogani.local` (STAFF), `eleanor@example.com` (CUSTOMER).
 
-**Storefront and admin:** open `frontend/` or `admin/` with any static server (e.g. VS Code Live Server on port 5500, which the API allows via CORS).
+**Admin:** serve `admin/` with a static server on port 5500 and open `page-login.html`.
+For JDK 18+, use `jwebserver -b 127.0.0.1 -p 5500 -d admin` from the repository root.
+Configure the API origin in `admin/assets/js/config.js` (default `http://localhost:8080`).
+If using another UI origin, set `CORS_ORIGINS` to include that exact origin. Opening HTML with `file://` is unsupported.
+
+The admin session is kept in `sessionStorage`, not persistent local storage. ADMIN manages categories and hides products;
+STAFF can read categories and create/edit products and images. The backend enforces these roles independently of the UI.
+Use a current Chromium browser over localhost or HTTPS. Web Locks prevent duplicated tabs from sharing the same
+single-use refresh token; a duplicated authenticated tab asks you to sign in separately.
+
+Outside the explicit `local` profile, `JWT_SECRET` is required (at least 32 characters). Docker Compose also requires it.
+Existing Flyway V2 includes demo accounts; this delivery preserves migrations and is not a production-data bootstrap.
+Before production, replace demo credentials and plan a separate production seed strategy.
+
+Images: `POST /api/admin/uploads` accepts multipart `file` (PNG/JPEG, at most 5 MB and 8 million pixels),
+decodes and rewrites it as PNG with a generated filename, and returns `data.imageUrl`.
+Files are public under `GET /api/images/{name}`. Configure durable storage through `APP_UPLOAD_DIRECTORY`
+(default `./uploads` relative to the backend working directory); back it up with the database.
+Gallery operations take image URLs, and the first gallery image owns the product thumbnail.
+Use **Set as thumbnail** on a gallery image to select it, or choose a new file in the Thumbnail input.
+For existing products, thumbnail changes save immediately; product text/pricing still require Save.
+Image previews use `GET /api/images/{name}?size=thumb`, an aspect-preserving variant up to 320 px.
+Generated image URLs are immutable and support browser caching.
+
+Configure `APP_UPLOAD_PUBLIC_ORIGIN` for an externally hosted API (default `http://localhost:8080`;
+Docker Compose uses `UPLOAD_PUBLIC_ORIGIN`). Relative `/api/images/...` URLs are preferred.
+Absolute URLs from this origin are also tracked as local uploads; other origins are external images.
+
+An hourly maintenance job removes up to 1000 expired/revoked refresh tokens and 100 never-used uploads per run.
+Only uploads registered by migration V5 onward, older than 24 hours and never claimed by a successful
+product/category/gallery write can be deleted. Row locking prevents cleanup from racing a claim.
+Legacy files and files that have ever been used are retained, including files later detached from a record.
+Configure `APP_MAINTENANCE_ENABLED=false` to disable automatic maintenance,
+`APP_MAINTENANCE_UPLOAD_RETENTION_HOURS` to increase the retention window (minimum 24), or
+`APP_MAINTENANCE_CRON` to change the hourly UTC schedule. Automatic jobs are disabled in the test profile.
+
+Product detail/create/update responses include `version`. PUT `/api/admin/products/{id}` requires the
+version originally read in the request body; missing versions return 400 and stale versions return 409.
+All gallery mutations, including the original endpoints, require the current numeric `If-Match` version header.
+Read it from product detail or `GET /api/admin/products/{id}/images/state`.
+The admin uses state mutation endpoints (`POST /state`, `DELETE /state/{imageId}`, `PUT /state/order`,
+`PUT /state/{imageId}/thumbnail`) whose responses contain `{productId, version, thumbnailUrl, images}`.
+`POST /state?thumbnail=true` inserts and selects a new thumbnail in one transaction.
+An old form must reload after a conflict; it must not fetch a new version and automatically retry its old payload.
+
+Product lists now return a lightweight DTO without `shortDescription`, `description`, `information` or `shippingInfo`.
+Fetch product detail when those fields are needed. The list SQL uses a projection that excludes long content columns.
 
 ## API overview
 
@@ -120,6 +167,12 @@ No local PostgreSQL? `docker compose -f backend/docker-compose.yml up db` starts
 | GET | `/api/products/{slug}` | public |
 | GET, POST, PUT | `/api/admin/products` | ADMIN, STAFF |
 | DELETE | `/api/admin/products/{id}` | ADMIN |
+| GET | `/api/admin/categories`, `/api/admin/categories/{id}` | ADMIN, STAFF |
+| POST, PUT, DELETE | `/api/admin/categories` (PUT/DELETE use `/{id}`) | ADMIN |
+| GET, POST, PUT, DELETE | `/api/admin/products/{id}/images` (item operations use `/{imageId}`; reorder uses `/order`) | ADMIN, STAFF |
+| POST | `/api/admin/uploads` | ADMIN, STAFF |
+| GET | `/api/images/{name}` | public |
+| GET | `/api/cart` | authenticated |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -130,11 +183,18 @@ Example: `GET /api/products?categoryId=2&onSale=true&sort=price_asc&page=0&size=
 
 ```bash
 mvn -f backend/pom.xml test      # unit tests
-mvn -f backend/pom.xml verify    # + integration tests (Testcontainers, requires Docker)
+mvn -f backend/pom.xml verify    # + integration tests against ogani_store_test
 ```
 
-`ProductApiIT` starts a PostgreSQL container, runs the Flyway migrations and checks the public API, validation and role-based access end to end.
-The same command runs in GitHub Actions on every push.
+Create a separate `ogani_store_test` database before `verify`. Set `TEST_DB_URL`, `TEST_DB_USER`, and
+`TEST_DB_PASSWORD` if needed (defaults: localhost:5432, postgres/postgres). Never point tests at your dev or production database.
+Integration tests run real Flyway migrations and check catalog, role enforcement, refresh-token concurrency and uploads.
+GitHub Actions provisions its own PostgreSQL service.
+
+Frontend API-client regression tests: with Node 18+, run
+`node --input-type=module -e "import('./admin/tests/api.test.mjs').then(async m => console.log(await m.run()))"`.
+Product editor regressions:
+`node --input-type=module -e "import('./admin/tests/product-editor.test.mjs').then(async m => console.log(await m.run()))"`.
 
 ## Roadmap
 
@@ -148,14 +208,13 @@ The same command runs in GitHub Actions on every push.
 - [ ] Order management with a status state machine
 - [ ] Reviews, wishlist, customer addresses
 - [ ] Blog, banners, contact form, newsletter, store settings
-- [ ] Connect the storefront and admin pages to the API
+- [x] Connect admin authentication, products, categories and gallery to the API
+- [ ] Restore the missing storefront source and connect customer flows
+- [ ] Implement the remaining admin APIs and connect their preview pages
 - [ ] Payment sandbox (PayPal / VNPay), caching, order confirmation emails
 
 ## Credits
 
-- Storefront template **Ogani** by [Colorlib](https://colorlib.com/); see `frontend/readme.txt` for its license terms.
+- Storefront template **Ogani** by [Colorlib](https://colorlib.com/); storefront source/license files are not included in this checkout.
 - Admin template **Spark Admin** by ThemeWagon (MIT license).
 - Sample images come from the Ogani template.
-=======
-# organi_store
->>>>>>> 2802fc29e5dc8652bf6e0a2c9e88657ef91b3979

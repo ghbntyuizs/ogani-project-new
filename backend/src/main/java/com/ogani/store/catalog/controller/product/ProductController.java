@@ -3,6 +3,7 @@ package com.ogani.store.catalog.controller.product;
 import com.ogani.store.catalog.dto.*;
 import com.ogani.store.catalog.dto.response.product.ProductImageResponse;
 import com.ogani.store.catalog.dto.response.product.ProductResponse;
+import com.ogani.store.catalog.dto.response.product.ProductListResponse;
 import com.ogani.store.catalog.service.interfaces.ProductImageService;
 import com.ogani.store.catalog.service.interfaces.ProductService;
 import com.ogani.store.common.dto.common.ApiResponse;
@@ -25,7 +26,7 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "Danh sách sản phẩm: lọc theo danh mục/giá/sale/featured, sort=latest|price_asc|price_desc|rating|popular")
-    public ApiResponse<PageResponse<ProductResponse>> list(
+    public ApiResponse<PageResponse<ProductListResponse>> list(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) BigDecimal minPrice,

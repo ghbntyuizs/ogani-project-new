@@ -3,6 +3,7 @@ package com.ogani.store.catalog.controller.adminController;
 import com.ogani.store.catalog.dto.*;
 import com.ogani.store.catalog.dto.request.product.ProductRequest;
 import com.ogani.store.catalog.dto.response.product.ProductResponse;
+import com.ogani.store.catalog.dto.response.product.ProductListResponse;
 import com.ogani.store.catalog.entity.ProductStatus;
 import com.ogani.store.catalog.service.interfaces.ProductService;
 import com.ogani.store.common.dto.common.ApiResponse;
@@ -25,7 +26,7 @@ public class AdminProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ApiResponse<PageResponse<ProductResponse>> list(
+    public ApiResponse<PageResponse<ProductListResponse>> list(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) ProductStatus status,
