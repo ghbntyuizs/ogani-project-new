@@ -5,12 +5,13 @@ import com.ogani.store.order.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
     Optional<Order> findByUserIdAndCheckoutKey(Long userId, String checkoutKey);
     Optional<Order> findByIdAndUserId(Long id, Long userId);
 
