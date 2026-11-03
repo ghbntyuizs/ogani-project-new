@@ -5,6 +5,8 @@ import com.ogani.store.order.repository.*;
 import com.ogani.store.order.service.impl.CartServiceImpl;
 import com.ogani.store.security.UserPrincipal;
 import com.ogani.store.user.entity.*;
+import com.ogani.store.user.repository.UserRepository;
+import com.ogani.store.catalog.repository.ProductRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +23,8 @@ class CartReadTest {
             var cart = (Cart) invocation.getArgument(0);
             cart.setId(99L); return cart;
         });
-        var result = new CartServiceImpl(carts, mock(CartItemRepository.class))
+        var result = new CartServiceImpl(carts, mock(CartItemRepository.class),
+                mock(UserRepository.class), mock(ProductRepository.class))
                 .getCart(UserPrincipal.from(user));
         assertNull(result.cartId());
         assertTrue(result.items().isEmpty());

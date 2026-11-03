@@ -2,6 +2,11 @@
 package com.ogani.store.order.service.impl;
 
 import com.ogani.store.catalog.entity.Product;
+import com.ogani.store.catalog.entity.ProductStatus;
+import com.ogani.store.catalog.repository.ProductRepository;
+import com.ogani.store.common.exception.AppException;
+import com.ogani.store.common.exception.ErrorCode;
+import com.ogani.store.order.dto.request.cart.AddCartItemRequest;
 import com.ogani.store.order.dto.response.CartItemResponse;
 import com.ogani.store.order.dto.response.CartResponse;
 import com.ogani.store.order.entity.Cart;
@@ -10,10 +15,13 @@ import com.ogani.store.order.repository.CartItemRepository;
 import com.ogani.store.order.repository.CartRepository;
 import com.ogani.store.order.service.interfaces.CartService;
 import com.ogani.store.security.UserPrincipal;
+import com.ogani.store.user.entity.UserStatus;
+import com.ogani.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -21,12 +29,65 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository carts;
     private final CartItemRepository cartItems;
+    private final UserRepository users;
+    private final ProductRepository products;
 
     public CartServiceImpl(
             CartRepository carts,
-            CartItemRepository cartItems) {
+            CartItemRepository cartItems,
+            UserRepository users,
+            ProductRepository products) {
         this.carts = carts;
         this.cartItems = cartItems;
+        this.users = users;
+        this.products = products;
+    }
+
+    @Override
+    @Transactional
+    public CartResponse addItem(UserPrincipal principal, AddCartItemRequest request) {
+        if (principal == null) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (request == null || request.productId() == null || request.productId() <= 0
+                || request.quantity() == null || request.quantity() <= 0) {
+            throw new AppException(ErrorCode.VALIDATION_ERROR);
+        }
+
+        // The user exists even before their first cart. All cart writers must take this lock first.
+        var user = users.findByIdForCartUpdate(principal.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        if (user.getStatus() != UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+
+        // Serialize the stock/status check with catalog writes without changing inventory/version.
+        Product product = products.findByIdForUpdate(request.productId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Product"));
+        if (product.getStatus() != ProductStatus.ACTIVE
+                || !Boolean.TRUE.equals(product.getCategory().getActive())) {
+            throw new AppException(ErrorCode.PRODUCT_UNAVAILABLE);
+        }
+
+        Cart cart = carts.findByUserId(user.getId()).orElse(null);
+        CartItem item = cart == null ? null
+                : cartItems.findByCartIdAndProductId(cart.getId(), product.getId()).orElse(null);
+        long quantity = (item == null ? 0L : item.getQuantity().longValue()) + request.quantity();
+        if (quantity > product.getStockQuantity()) {
+            throw new AppException(ErrorCode.INSUFFICIENT_STOCK, product.getName());
+        }
+
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUser(user);
+            cart = carts.save(cart);
+        }
+        if (item == null) {
+            item = new CartItem();
+            item.setCart(cart);
+            item.setProduct(product);
+        }
+        item.setQuantity((int) quantity);
+        // Item updates alone do not dirty the cart entity or advance its @UpdateTimestamp.
+        cart.setUpdatedAt(LocalDateTime.now());
+        cartItems.saveAndFlush(item);
+        return getCart(principal);
     }
 
     @Override

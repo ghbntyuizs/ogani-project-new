@@ -24,6 +24,7 @@ public enum ErrorCode {
 
     // === 3. Business Logic Errors ===
     INSUFFICIENT_STOCK("Insufficient stock for product %s", HttpStatus.CONFLICT),
+    PRODUCT_UNAVAILABLE("Product is not available for purchase", HttpStatus.CONFLICT),
 
     // === 4. Resource / Data Not Found or Conflicts ===
     RESOURCE_NOT_FOUND("%s not found", HttpStatus.NOT_FOUND),
