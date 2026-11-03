@@ -29,6 +29,7 @@ public enum ErrorCode {
     ORDER_CANCELLATION_NOT_ALLOWED("Order cannot be cancelled automatically", HttpStatus.CONFLICT),
     ORDER_STATUS_CONFLICT("Order status cannot be changed", HttpStatus.CONFLICT),
     ORDER_PAYMENT_CONFLICT("Payment cannot be confirmed", HttpStatus.CONFLICT),
+    ADDRESS_LIMIT_EXCEEDED("Address limit exceeded", HttpStatus.CONFLICT),
 
     // === 4. Resource / Data Not Found or Conflicts ===
     RESOURCE_NOT_FOUND("%s not found", HttpStatus.NOT_FOUND),

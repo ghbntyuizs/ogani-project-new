@@ -34,6 +34,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
                    o.firstName as firstName, o.lastName as lastName, o.email as email, o.phone as phone,
                    o.shipRecipientName as shipRecipientName, o.shipCountry as shipCountry,
                    o.shipAddress as shipAddress, o.shipCity as shipCity, o.shipState as shipState,
+                   o.shipDistrict as shipDistrict, o.shipWard as shipWard,
                    o.shipPostcode as shipPostcode, o.orderNotes as orderNotes,
                    o.subtotal as subtotal, o.discountAmount as discountAmount, o.shippingFee as shippingFee,
                    o.total as total, o.currency as currency, o.coupon.id as couponId, o.couponCode as couponCode,

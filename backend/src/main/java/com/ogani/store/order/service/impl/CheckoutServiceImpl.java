@@ -84,6 +84,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         order.setShipRecipientName(shipping.recipientName());
         order.setShipCountry(shipping.country()); order.setShipAddress(shipping.address());
         order.setShipCity(shipping.city()); order.setShipState(shipping.state()); order.setShipPostcode(shipping.postcode());
+        order.setShipDistrict(shipping.district()); order.setShipWard(shipping.ward());
         order.setOrderNotes(text(request.orderNotes()));
         order.setSubtotal(quote.subtotal()); order.setShippingFee(quote.shippingFee());
         order.setDiscountAmount(quote.discountAmount()); order.setTotal(quote.total());
@@ -118,7 +119,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         User buyer=owner(principal);
         return addressRepository.findByUserIdOrderByDefaultAddressDescIdAsc(buyer.getId()).stream()
                 .map(a -> new SavedAddressResponse(a.getId(),a.getRecipientName(),a.getPhone(),a.getCountry(),
-                        a.getAddressLine(),a.getCity(),a.getState(),a.getPostcode(),Boolean.TRUE.equals(a.getDefaultAddress()))).toList();
+                        a.getAddressLine(),a.getCity(),a.getState(),a.getPostcode(),Boolean.TRUE.equals(a.getDefaultAddress()),a.getDistrict(),a.getWard())).toList();
     }
 
     private User owner(UserPrincipal principal) {
@@ -131,15 +132,17 @@ public class CheckoutServiceImpl implements CheckoutService {
     private ShippingResponse resolveShipping(User buyer,CheckoutRequest request) {
         DeliveryAddress delivery=request.deliveryAddress();
         String recipient=text(request.firstName())+" "+text(request.lastName());
+        String district=null,ward=null;
         if(request.addressId()!=null) {
             var saved=addressRepository.findByIdAndUserId(request.addressId(),buyer.getId())
                     .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND,"Address"));
             recipient=text(saved.getRecipientName());
+            district=saved.getDistrict();ward=saved.getWard();
             delivery=new DeliveryAddress(saved.getPhone(),saved.getCountry(),saved.getAddressLine(),saved.getCity(),saved.getState(),saved.getPostcode());
         }
         if (recipient==null || recipient.length()>121 || !validator.validate(delivery).isEmpty()) throw invalid("Invalid delivery address");
         return new ShippingResponse(recipient,text(delivery.phone()),text(delivery.country()),text(delivery.address()),
-                text(delivery.city()),text(delivery.state()),text(delivery.postcode()));
+                text(delivery.city()),text(delivery.state()),text(delivery.postcode()),district,ward);
     }
 
     private String requestHash(CheckoutRequest r) {

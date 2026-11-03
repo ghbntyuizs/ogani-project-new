@@ -45,6 +45,12 @@ public class CustomerAddress {
     @Column(name = "city", nullable = false, length = 80)
     private String city;
 
+    @Column(name = "district", length = 80)
+    private String district;
+
+    @Column(name = "ward", length = 80)
+    private String ward;
+
     @Column(name = "state", length = 80)
     private String state;
 

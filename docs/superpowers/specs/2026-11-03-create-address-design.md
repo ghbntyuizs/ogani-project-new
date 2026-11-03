@@ -1,0 +1,7 @@
+# Create delivery address design
+
+Approved in chat on 2026-11-03: POST /api/addresses creates an address owned by the active logged-in CUSTOMER. Required recipientName max120, city/district/ward max80 each, address max255; normalize whitespace. Validate Vietnam phone format. Names are free text with presence/length checks; no external geographic directory. Maximum10 addresses. The first is automatically default; a later default selection replaces the old one atomically. Never permit multiple defaults due to concurrent creation. Include district/ward in saved-address reads and immutable checkout order snapshots.
+
+Approach: extend existing customer_addresses and order snapshots, reuse user-row lock used by checkout, add database uniqueness for defaults. A separate geography-code catalog was offered; the user chose name validation first. Existing country/state/postcode fields and legacy null district/ward stay readable. Creating addresses does not edit old orders. Existing ad-hoc checkout deliveryAddress behavior remains compatible.
+
+Non-goals: edit/delete/default-only endpoints, geography validation service, international address creation, phone ownership verification and frontend integration. Success201 returns the saved address ID usable by checkout; validation400, authentication401, role403, cap409. Retry after success can create a second address; no idempotency guarantee for creation.

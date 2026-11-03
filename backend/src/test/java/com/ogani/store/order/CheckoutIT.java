@@ -88,6 +88,20 @@ class CheckoutIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.data.deliveryAddress.recipientName").value(recipient));
     }
 
+    @Test void newAddressDistrictAndWardSurviveCheckoutAndLaterAddressChanges() throws Exception {
+        var created=mvc.perform(MockMvcRequestBuilders.post("/api/addresses").with(user(buyer)).contentType("application/json")
+                .content("{\"recipientName\":\"Saved Buyer\",\"phone\":\"0901234567\",\"city\":\"HCM\",\"district\":\"Quận 1\",\"ward\":\"Bến Nghé\",\"address\":\"12 Test\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long address=((Number)JsonPath.read(created,"$.data.id")).longValue();fresh();
+        var result=place(UUID.randomUUID().toString(),request(token(),"\"addressId\":"+address)).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.deliveryAddress.district").value("Quận 1")).andExpect(jsonPath("$.data.deliveryAddress.ward").value("Bến Nghé"))
+                .andReturn().getResponse().getContentAsString();
+        long order=((Number)JsonPath.read(result,"$.data.id")).longValue();
+        jdbc.update("update customer_addresses set district='Changed',ward='Changed' where id=?",address);fresh();
+        get("/api/orders/"+order,CUSTOMER).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.district").value("Quận 1"));
+        get("/api/admin/orders/"+order,ADMIN).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.ward").value("Bến Nghé"));
+    }
+
     @Test void foreignAddressAndConflictingAddressSourcesAreRejected() throws Exception {
         long foreign=jdbc.queryForObject("select id from customer_addresses where user_id<>? limit 1",Long.class,buyer.getId());
         String token=token();

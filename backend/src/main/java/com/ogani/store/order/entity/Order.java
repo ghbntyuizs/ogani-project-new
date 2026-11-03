@@ -70,6 +70,12 @@ public class Order {
     @Column(name = "ship_city", nullable = false, length = 80)
     private String shipCity;
 
+    @Column(name = "ship_district", length = 80)
+    private String shipDistrict;
+
+    @Column(name = "ship_ward", length = 80)
+    private String shipWard;
+
     @Column(name = "ship_state", length = 80)
     private String shipState;
 

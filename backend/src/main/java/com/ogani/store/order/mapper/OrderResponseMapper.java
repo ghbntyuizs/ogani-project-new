@@ -18,7 +18,7 @@ public class OrderResponseMapper {
                 i.getProduct()==null?null:i.getProduct().getId(),i.getProductName(),i.getUnitPrice(),i.getQuantity(),i.getLineTotal())).toList();
         return new OrderResponse(order.getId(),order.getOrderCode(),order.getFirstName(),order.getLastName(),order.getEmail(),
                 new ShippingResponse(order.getShipRecipientName(),order.getPhone(),order.getShipCountry(),order.getShipAddress(),
-                        order.getShipCity(),order.getShipState(),order.getShipPostcode()),
+                        order.getShipCity(),order.getShipState(),order.getShipPostcode(),order.getShipDistrict(),order.getShipWard()),
                 order.getOrderNotes(),lines,order.getSubtotal(),order.getDiscountAmount(),order.getShippingFee(),order.getTotal(),
                 order.getCurrency(),order.getPaymentMethod(),order.getPaymentStatus(),order.getOrderStatus(),order.getCreatedAt());
     }

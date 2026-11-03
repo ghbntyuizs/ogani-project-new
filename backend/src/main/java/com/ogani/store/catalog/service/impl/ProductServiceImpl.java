@@ -109,6 +109,8 @@ public class ProductServiceImpl implements ProductService {
                 ? SlugUtil.slugify(request.name())
                 : SlugUtil.slugify(request.slug());
 
+        requireUsableSlug(slug);
+
         if (products.existsBySku(request.sku())) {
             throw new AppException(
                     ErrorCode.RESOURCE_ALREADY_EXISTS,
@@ -163,6 +165,8 @@ public class ProductServiceImpl implements ProductService {
                 || request.slug().isBlank())
                 ? product.getSlug()
                 : SlugUtil.slugify(request.slug());
+
+        requireUsableSlug(slug);
 
         if (!product.getSlug().equals(slug)
                 && products.existsBySlug(slug)) {
@@ -244,6 +248,13 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return category;
+    }
+
+    private static void requireUsableSlug(String slug) {
+        if (slug == null || slug.isBlank()) {
+            throw AppException.withCustomMessage(ErrorCode.VALIDATION_ERROR,
+                    "Product slug cannot be empty after normalization");
+        }
     }
 
     private Category findCategory(Integer id) {
