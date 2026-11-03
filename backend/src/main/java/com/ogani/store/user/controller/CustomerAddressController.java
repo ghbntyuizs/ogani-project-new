@@ -26,4 +26,11 @@ public class CustomerAddressController {
             @Valid @RequestBody CreateAddressRequest request) {
         return ApiResponse.ok(addresses.create(principal,request));
     }
+
+    @PutMapping("/{id}")
+    @Operation(summary="Replace supported fields of an owned address; false preserves its current default, true switches default")
+    public ApiResponse<SavedAddressResponse> update(@AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id,@Valid @RequestBody CreateAddressRequest request) {
+        return ApiResponse.ok(addresses.update(principal,id,request));
+    }
 }

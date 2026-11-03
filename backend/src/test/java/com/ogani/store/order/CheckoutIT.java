@@ -97,7 +97,10 @@ class CheckoutIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.data.deliveryAddress.district").value("Quận 1")).andExpect(jsonPath("$.data.deliveryAddress.ward").value("Bến Nghé"))
                 .andReturn().getResponse().getContentAsString();
         long order=((Number)JsonPath.read(result,"$.data.id")).longValue();
-        jdbc.update("update customer_addresses set district='Changed',ward='Changed' where id=?",address);fresh();
+        fresh();
+        mvc.perform(MockMvcRequestBuilders.put("/api/addresses/{id}",address).with(user(buyer)).contentType("application/json")
+                .content("{\"recipientName\":\"Changed Buyer\",\"phone\":\"0901234567\",\"city\":\"Changed city\",\"district\":\"Changed district\",\"ward\":\"Changed ward\",\"address\":\"Changed street\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.ward").value("Changed ward"));fresh();
         get("/api/orders/"+order,CUSTOMER).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.district").value("Quận 1"));
         get("/api/admin/orders/"+order,ADMIN).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.ward").value("Bến Nghé"));
     }

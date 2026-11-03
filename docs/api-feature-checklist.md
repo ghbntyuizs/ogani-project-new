@@ -66,7 +66,11 @@ API trạng thái và xác nhận thanh toán được tách riêng; không cậ
   - [x] Địa chỉ đầu tiên mặc định; thay mặc định nguyên tử, chống request tạo đồng thời.
   - [x] Snapshot quận/huyện, phường/xã khi checkout; giữ tương thích dữ liệu cũ.
   - [x] [Tài liệu API và kiểm thử](customer-address-verification.md).
-- [ ] **PUT `/api/addresses/{id}`** — Sửa địa chỉ của mình.
+- [x] **PUT `/api/addresses/{id}`** — Cập nhật đầy đủ các trường hỗ trợ của địa chỉ thuộc customer hiện tại.
+  - [x] Validate như POST; foreign/missing404, chặn Anonymous/Admin/Staff và tài khoản khóa/đổi quyền.
+  - [x] true chuyển mặc định nguyên tử; false giữ mặc định hiện tại; không tăng số địa chỉ.
+  - [x] Chống ghi xen kẽ, rollback và giữ nguyên snapshot đơn hàng cũ.
+  - [x] [Tài liệu API và kiểm thử](customer-address-update-verification.md).
 - [ ] **DELETE `/api/addresses/{id}`** — Xóa địa chỉ của mình.
 - [ ] **PATCH `/api/addresses/{id}/default`** — Chọn địa chỉ mặc định.
 - [ ] Chốt quy tắc địa chỉ mặc định khi tạo/xóa; chống nhiều địa chỉ mặc định do request đồng thời.
