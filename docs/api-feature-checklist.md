@@ -40,7 +40,13 @@ Cập nhật: 2026-11-03. Endpoint chưa hoàn thành là đề xuất, có th�
   - [x] Snapshot giao dịch nhất quán khi trạng thái đang được cập nhật.
   - [x] Projection3 truy vấn, không N+1 hoặc lộ key/hash; index V11.
   - [x] [Tài liệu và kiểm thử](admin-order-detail-verification.md).
-- [ ] **PATCH `/api/admin/orders/{id}/status`** — Chuyển trạng thái theo state machine.
+- [x] **PATCH `/api/admin/orders/{id}/status`** — Chuyển trạng thái theo state machine.
+  - [x] PENDING→CONFIRMED/CANCELLED; CONFIRMED→SHIPPING/CANCELLED; SHIPPING→COMPLETED.
+  - [x] COMPLETED/CANCELLED không được mở lại; cùng target không lặp effects/history.
+  - [x] Kiểm tra version, actor Admin/Staff và payment policy; COMPLETED cầnPAID.
+  - [x] Hủy hoàn kho; hoàn tất tăng sold_count đúng một lần; giữ snapshot/payment/cart.
+  - [x] Race giữa staff/customer, product counters, owner thay đổi và rollback.
+  - [x] [Tài liệu và kiểm thử](admin-order-status-verification.md).
 - [ ] **PATCH `/api/admin/orders/{id}/payment-status`** — Xác nhận thu tiền COD theo quyền.
 - [ ] Chặn chuyển trạng thái sai, chống thao tác lặp/đồng thời.
 - [ ] Hủy đơn hoàn kho đúng một lần; hoàn tất tăng sold_count đúng một lần.

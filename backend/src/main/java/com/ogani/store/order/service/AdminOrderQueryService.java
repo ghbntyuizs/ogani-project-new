@@ -19,18 +19,15 @@ import com.ogani.store.order.repository.OrderRepository;
 import com.ogani.store.order.repository.OrderItemRepository;
 import com.ogani.store.order.repository.OrderStatusHistoryRepository;
 import com.ogani.store.security.UserPrincipal;
-import com.ogani.store.user.entity.UserStatus;
-import com.ogani.store.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Isolation;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class AdminOrderQueryService {
-    private final UserRepository users;
+    private final AdminOrderAccess access;
     private final OrderRepository orders;
     private final OrderItemRepository items;
     private final OrderStatusHistoryRepository history;
@@ -66,9 +63,6 @@ public class AdminOrderQueryService {
     }
 
     private void requireAdmin(UserPrincipal principal) {
-        if(principal==null) throw new AppException(ErrorCode.UNAUTHENTICATED);
-        var actor=users.findById(principal.getId()).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
-        if(actor.getStatus()!=UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
-        if(actor.getRole()==null || !Set.of("ADMIN","STAFF").contains(actor.getRole().getName())) throw new AppException(ErrorCode.FORBIDDEN);
+        access.requireActive(principal);
     }
 }

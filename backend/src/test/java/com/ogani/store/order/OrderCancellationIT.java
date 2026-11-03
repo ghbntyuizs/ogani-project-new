@@ -135,7 +135,9 @@ class OrderCancellationIT extends AbstractIntegrationTest {
     @Test void overflowRollsBackTheEntireCancellation() throws Exception {
         jdbc.update("update products set stock_quantity=2147483647 where id=2");
         jdbc.update("insert into order_items(order_id,product_id,product_name,unit_price,quantity,line_total) values(?,2,'Later overflow',1,1,1)",id);
-        cancel("{}",CUSTOMER).andExpect(status().isConflict());assertEquals(0,stock());assertEquals(0,historyCount());
+        cancel("{}",CUSTOMER).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Restocked inventory exceeds supported range"));
+        assertEquals(0,stock());assertEquals(0,historyCount());
         assertEquals("PENDING",jdbc.queryForObject("select order_status from orders where id=?",String.class,id));
     }
 

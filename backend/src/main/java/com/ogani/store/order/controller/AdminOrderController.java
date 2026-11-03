@@ -5,6 +5,10 @@ import com.ogani.store.common.dto.common.ApiResponse;
 import com.ogani.store.order.dto.request.order.AdminOrderFilter;
 import com.ogani.store.order.dto.response.order.AdminOrderListResponse;
 import com.ogani.store.order.dto.response.order.AdminOrderDetailResponse;
+import com.ogani.store.order.dto.request.order.UpdateOrderStatusRequest;
+import com.ogani.store.order.dto.response.order.AdminOrderStatusResponse;
+import com.ogani.store.order.service.AdminOrderStatusService;
+import jakarta.validation.Valid;
 import com.ogani.store.order.service.AdminOrderQueryService;
 import com.ogani.store.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name="Orders (admin/staff)")
 public class AdminOrderController {
     private final AdminOrderQueryService orders;
+    private final AdminOrderStatusService statuses;
 
     @GetMapping
     @Operation(summary="List all orders; search historical order code/customer name/email and combine filters")
@@ -40,5 +45,12 @@ public class AdminOrderController {
     @Operation(summary="Order snapshots, payment/coupon and chronological status history; Admin/Staff only")
     public ApiResponse<AdminOrderDetailResponse> detail(@AuthenticationPrincipal UserPrincipal principal,@PathVariable Long id) {
         return ApiResponse.ok(orders.detail(principal,id));
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary="Change order status with current version; completion requires PAID")
+    public ApiResponse<AdminOrderStatusResponse> updateStatus(@AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id,@Valid @RequestBody UpdateOrderStatusRequest request) {
+        return ApiResponse.ok(statuses.update(principal,id,request));
     }
 }
