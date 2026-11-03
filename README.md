@@ -182,6 +182,7 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | GET | `/api/orders/{id}` | authenticated; own order snapshot |
 | GET | `/api/orders` | authenticated; own summaries, page/size/status, sort=createdAt,desc or createdAt,asc |
 | POST | `/api/orders/{id}/cancel` | authenticated; cancel own PENDING/UNPAID/COD order and restore stock once |
+| GET | `/api/admin/orders` | ADMIN/STAFF; all orders, keyword/status/paymentStatus/dateFrom/dateTo/page/size/sort |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -223,6 +224,7 @@ Product editor regressions:
 - [ ] Apply coupons
 - [x] COD checkout: preview, saved/new delivery address, idempotent placement, atomic stock deduction, snapshots and initial status history
 - [ ] Order management with a status state machine
+- [x] Admin/Staff order list with search, status/payment/day filters and stable pagination
 - [ ] Reviews, wishlist, customer addresses
 - [ ] Blog, banners, contact form, newsletter, store settings
 - [x] Connect admin authentication, products, categories and gallery to the API
@@ -231,6 +233,8 @@ Product editor regressions:
 - [ ] Payment sandbox (PayPal / VNPay), caching, order confirmation emails
 
 Checkout API examples, shipping/confirmation rules and verification: [COD checkout](docs/cod-checkout-verification.md).
+
+Admin/Staff order search and filters: [API and verification](docs/admin-order-list-verification.md).
 
 ## Credits
 

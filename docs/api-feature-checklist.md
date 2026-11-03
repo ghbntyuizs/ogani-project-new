@@ -24,7 +24,14 @@ Cập nhật: 2026-11-03. Endpoint chưa hoàn thành là đề xuất, có th�
 
 ## 2. Đơn hàng — Admin/Staff (ưu tiên cao)
 
-- [ ] **GET `/api/admin/orders`** — Tìm kiếm, lọc trạng thái, phân trang tất cả đơn theo quyền.
+- [x] **GET `/api/admin/orders`** — Tìm kiếm, lọc trạng thái, phân trang tất cả đơn theo quyền.
+  - [x] Admin/Staff được xem tất cả đơn; Customer403, Anonymous401.
+  - [x] Tìm mã đơn, tên/email snapshot; escape wildcard và giới hạn keyword.
+  - [x] Lọc trạng thái đơn/thanh toán và khoảng ngày, kết hợp AND.
+  - [x] Phân trang, sort ngày tạo tăng/giảm và id tie-breaker.
+  - [x] Summary projection, kiểm tra SQL không N+1 và index V10.
+  - [x] Empty/boundary/validation, tài khoản bị khóa/hạ quyền.
+  - [x] [Tài liệu và kiểm thử](admin-order-list-verification.md).
 - [ ] **GET `/api/admin/orders/{id}`** — Chi tiết đơn và lịch sử trạng thái.
 - [ ] **PATCH `/api/admin/orders/{id}/status`** — Chuyển trạng thái theo state machine.
 - [ ] **PATCH `/api/admin/orders/{id}/payment-status`** — Xác nhận thu tiền COD theo quyền.
