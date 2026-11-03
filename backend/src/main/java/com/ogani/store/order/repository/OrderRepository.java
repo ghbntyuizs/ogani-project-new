@@ -22,6 +22,13 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Query("select o from Order o where o.id=:id and o.user.id=:userId")
     Optional<Order> findOwnedByIdForUpdate(Long id, Long userId);
 
+    @Query("select o.id as id, o.user.id as userId from Order o where o.id=:id")
+    Optional<OrderOwnerView> findOwnerById(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from Order o where o.id=:id")
+    Optional<Order> findForStatusUpdate(Long id);
+
     @Query("""
             select o.id as id, o.orderCode as orderCode, o.version as version, o.user.id as userId,
                    o.firstName as firstName, o.lastName as lastName, o.email as email, o.phone as phone,
