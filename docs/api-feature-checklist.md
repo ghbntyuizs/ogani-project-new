@@ -32,7 +32,14 @@ Cập nhật: 2026-11-03. Endpoint chưa hoàn thành là đề xuất, có th�
   - [x] Summary projection, kiểm tra SQL không N+1 và index V10.
   - [x] Empty/boundary/validation, tài khoản bị khóa/hạ quyền.
   - [x] [Tài liệu và kiểm thử](admin-order-list-verification.md).
-- [ ] **GET `/api/admin/orders/{id}`** — Chi tiết đơn và lịch sử trạng thái.
+- [x] **GET `/api/admin/orders/{id}`** — Chi tiết đơn và lịch sử trạng thái.
+  - [x] Customer/address/product snapshots và payment/coupon/amounts đã lưu.
+  - [x] Lịch sử theo changedAt/id, vẫn giữ sự kiện khi actor bị xóa.
+  - [x] Nullable customer/product/coupon references và dữ liệu cũ rỗng.
+  - [x] Admin/Staff; chặn Customer, Anonymous, tài khoản khóa/hạ quyền.
+  - [x] Snapshot giao dịch nhất quán khi trạng thái đang được cập nhật.
+  - [x] Projection3 truy vấn, không N+1 hoặc lộ key/hash; index V11.
+  - [x] [Tài liệu và kiểm thử](admin-order-detail-verification.md).
 - [ ] **PATCH `/api/admin/orders/{id}/status`** — Chuyển trạng thái theo state machine.
 - [ ] **PATCH `/api/admin/orders/{id}/payment-status`** — Xác nhận thu tiền COD theo quyền.
 - [ ] Chặn chuyển trạng thái sai, chống thao tác lặp/đồng thời.

@@ -4,6 +4,7 @@ import com.ogani.store.common.dto.PageResponse;
 import com.ogani.store.common.dto.common.ApiResponse;
 import com.ogani.store.order.dto.request.order.AdminOrderFilter;
 import com.ogani.store.order.dto.response.order.AdminOrderListResponse;
+import com.ogani.store.order.dto.response.order.AdminOrderDetailResponse;
 import com.ogani.store.order.service.AdminOrderQueryService;
 import com.ogani.store.security.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,5 +34,11 @@ public class AdminOrderController {
             @Parameter(description="Page size1–100, default20",example="20") @RequestParam(required=false) String size,
             @Parameter(description="Default createdAt,desc",schema=@Schema(allowableValues={"createdAt,desc","createdAt,asc"})) @RequestParam(required=false) String sort) {
         return ApiResponse.ok(orders.list(principal,AdminOrderFilter.parse(keyword,status,paymentStatus,dateFrom,dateTo,page,size,sort)));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary="Order snapshots, payment/coupon and chronological status history; Admin/Staff only")
+    public ApiResponse<AdminOrderDetailResponse> detail(@AuthenticationPrincipal UserPrincipal principal,@PathVariable Long id) {
+        return ApiResponse.ok(orders.detail(principal,id));
     }
 }
