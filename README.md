@@ -181,6 +181,7 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | POST | `/api/checkout` | authenticated; COD order, required UUID `Idempotency-Key` |
 | GET | `/api/orders/{id}` | authenticated; own order snapshot |
 | GET | `/api/orders` | authenticated; own summaries, page/size/status, sort=createdAt,desc or createdAt,asc |
+| POST | `/api/orders/{id}/cancel` | authenticated; cancel own PENDING/UNPAID/COD order and restore stock once |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -230,9 +231,6 @@ Product editor regressions:
 - [ ] Payment sandbox (PayPal / VNPay), caching, order confirmation emails
 
 Checkout API examples, shipping/confirmation rules and verification: [COD checkout](docs/cod-checkout-verification.md).
-
-Customer order list: [API and verification](docs/customer-order-list-verification.md).
-Remaining API work by feature: [tracking checklist](docs/api-feature-checklist.md).
 
 ## Credits
 

@@ -26,6 +26,7 @@ public enum ErrorCode {
     INSUFFICIENT_STOCK("Insufficient stock for product %s", HttpStatus.CONFLICT),
     PRODUCT_UNAVAILABLE("Product is not available for purchase", HttpStatus.CONFLICT),
     CHECKOUT_CONFLICT("Checkout changed or is unavailable; review the cart again", HttpStatus.CONFLICT),
+    ORDER_CANCELLATION_NOT_ALLOWED("Order cannot be cancelled automatically", HttpStatus.CONFLICT),
 
     // === 4. Resource / Data Not Found or Conflicts ===
     RESOURCE_NOT_FOUND("%s not found", HttpStatus.NOT_FOUND),
