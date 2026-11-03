@@ -24,9 +24,9 @@ An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, 
 - Database versioning with Flyway, OpenAPI / Swagger UI
 - Unit tests and integration tests against a dedicated PostgreSQL database
 - Admin category CRUD, product gallery operations and validated local PNG/JPEG uploads
-- Cart read/add API with cumulative stock validation and concurrent-write protection (reading an empty cart does not create database records)
+- Cart read/add/update/remove API with stock validation and concurrent-write protection (reading an empty cart does not create database records)
 
-**Designed in the database, API still to build:** cart quantity replacement/removal, coupons, checkout and orders (with status history),
+**Designed in the database, API still to build:** cart item removal, coupons, checkout and orders (with status history),
 product reviews, wishlist, customer addresses, blog (posts, tags, comments), banners, contact messages,
 newsletter, store settings. JPA entities for all of them already exist.
 
@@ -174,6 +174,8 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | GET | `/api/images/{name}` | public |
 | GET | `/api/cart` | authenticated |
 | POST | `/api/cart/items` | authenticated; add `{ "productId": 1, "quantity": 2 }` |
+| PUT | `/api/cart/items/{itemId}` | authenticated; replace quantity with `{ "quantity": 3 }`; quantity 0 removes item |
+| DELETE | `/api/cart/items/{itemId}` | authenticated; remove owned item and return updated cart |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -210,8 +212,9 @@ Product editor regressions:
 - [x] Authentication (JWT + refresh token rotation) and role-based access
 - [x] Catalog API (public + admin) with filtering, sorting, pagination
 - [x] Admin dashboard UI adapted from Spark
-- [x] Read cart and add products with stock/concurrency validation
-- [ ] Replace cart quantities, remove items and apply coupons
+- [x] Read cart, add products and replace quantities with stock/concurrency validation
+- [x] Remove cart items through DELETE or PUT quantity 0
+- [ ] Apply coupons
 - [ ] Checkout: one transaction with stock deduction (optimistic locking), price/address snapshot and status history
 - [ ] Order management with a status state machine
 - [ ] Reviews, wishlist, customer addresses

@@ -7,6 +7,7 @@ import com.ogani.store.catalog.repository.ProductRepository;
 import com.ogani.store.common.exception.AppException;
 import com.ogani.store.common.exception.ErrorCode;
 import com.ogani.store.order.dto.request.cart.AddCartItemRequest;
+import com.ogani.store.order.dto.request.cart.UpdateCartItemRequest;
 import com.ogani.store.order.dto.response.CartItemResponse;
 import com.ogani.store.order.dto.response.CartResponse;
 import com.ogani.store.order.entity.Cart;
@@ -16,6 +17,7 @@ import com.ogani.store.order.repository.CartRepository;
 import com.ogani.store.order.service.interfaces.CartService;
 import com.ogani.store.security.UserPrincipal;
 import com.ogani.store.user.entity.UserStatus;
+import com.ogani.store.user.entity.User;
 import com.ogani.store.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,18 +54,8 @@ public class CartServiceImpl implements CartService {
             throw new AppException(ErrorCode.VALIDATION_ERROR);
         }
 
-        // The user exists even before their first cart. All cart writers must take this lock first.
-        var user = users.findByIdForCartUpdate(principal.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
-        if (user.getStatus() != UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
-
-        // Serialize the stock/status check with catalog writes without changing inventory/version.
-        Product product = products.findByIdForUpdate(request.productId())
-                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Product"));
-        if (product.getStatus() != ProductStatus.ACTIVE
-                || !Boolean.TRUE.equals(product.getCategory().getActive())) {
-            throw new AppException(ErrorCode.PRODUCT_UNAVAILABLE);
-        }
+        User user = lockCartOwner(principal);
+        Product product = lockPurchasableProduct(request.productId());
 
         Cart cart = carts.findByUserId(user.getId()).orElse(null);
         CartItem item = cart == null ? null
@@ -88,6 +80,68 @@ public class CartServiceImpl implements CartService {
         cart.setUpdatedAt(LocalDateTime.now());
         cartItems.saveAndFlush(item);
         return getCart(principal);
+    }
+
+    @Override
+    @Transactional
+    public CartResponse updateItem(UserPrincipal principal, Long itemId, UpdateCartItemRequest request) {
+        if (principal == null) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (itemId == null || itemId <= 0 || request == null
+                || request.quantity() == null || request.quantity() < 0) {
+            throw new AppException(ErrorCode.VALIDATION_ERROR);
+        }
+
+        User user = lockCartOwner(principal);
+        CartItem item = cartItems.findByIdAndCartUserId(itemId, user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Cart item"));
+        if (request.quantity() == 0) return removeOwnedItem(principal, item);
+        Product product = lockPurchasableProduct(item.getProduct().getId());
+        if (request.quantity() > product.getStockQuantity()) {
+            throw new AppException(ErrorCode.INSUFFICIENT_STOCK, product.getName());
+        }
+
+        item.setQuantity(request.quantity());
+        item.getCart().setUpdatedAt(LocalDateTime.now());
+        cartItems.saveAndFlush(item);
+        return getCart(principal);
+    }
+
+    @Override
+    @Transactional
+    public CartResponse deleteItem(UserPrincipal principal, Long itemId) {
+        if (principal == null) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (itemId == null || itemId <= 0) throw new AppException(ErrorCode.VALIDATION_ERROR);
+        User user = lockCartOwner(principal);
+        CartItem item = cartItems.findByIdAndCartUserId(itemId, user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Cart item"));
+        return removeOwnedItem(principal, item);
+    }
+
+    private CartResponse removeOwnedItem(UserPrincipal principal, CartItem item) {
+        // Removal must work even when the product/category is no longer purchasable.
+        item.getCart().setUpdatedAt(LocalDateTime.now());
+        cartItems.delete(item);
+        cartItems.flush();
+        return getCart(principal);
+    }
+
+    private User lockCartOwner(UserPrincipal principal) {
+        // All cart writers take the user lock first, including before the first cart exists.
+        User user = users.findByIdForCartUpdate(principal.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        if (user.getStatus() != UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        return user;
+    }
+
+    private Product lockPurchasableProduct(Long productId) {
+        // Serialize validation with catalog writes without changing inventory or product version.
+        Product product = products.findByIdForUpdate(productId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Product"));
+        if (product.getStatus() != ProductStatus.ACTIVE
+                || !Boolean.TRUE.equals(product.getCategory().getActive())) {
+            throw new AppException(ErrorCode.PRODUCT_UNAVAILABLE);
+        }
+        return product;
     }
 
     @Override
