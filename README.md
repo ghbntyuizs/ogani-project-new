@@ -24,9 +24,9 @@ An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, 
 - Database versioning with Flyway, OpenAPI / Swagger UI
 - Unit tests and integration tests against a dedicated PostgreSQL database
 - Admin category CRUD, product gallery operations and validated local PNG/JPEG uploads
-- Read-only cart API (reading an empty cart does not create database records)
+- Cart read/add API with cumulative stock validation and concurrent-write protection (reading an empty cart does not create database records)
 
-**Designed in the database, API still to build:** cart mutations, coupons, checkout and orders (with status history),
+**Designed in the database, API still to build:** cart quantity replacement/removal, coupons, checkout and orders (with status history),
 product reviews, wishlist, customer addresses, blog (posts, tags, comments), banners, contact messages,
 newsletter, store settings. JPA entities for all of them already exist.
 
@@ -173,6 +173,7 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | POST | `/api/admin/uploads` | ADMIN, STAFF |
 | GET | `/api/images/{name}` | public |
 | GET | `/api/cart` | authenticated |
+| POST | `/api/cart/items` | authenticated; add `{ "productId": 1, "quantity": 2 }` |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -188,6 +189,12 @@ mvn -f backend/pom.xml verify    # + integration tests against ogani_store_test
 
 Create a separate `ogani_store_test` database before `verify`. Set `TEST_DB_URL`, `TEST_DB_USER`, and
 `TEST_DB_PASSWORD` if needed (defaults: localhost:5432, postgres/postgres). Never point tests at your dev or production database.
+
+In IntelliJ, open **Run > Edit Configurations > CartAddConcurrencyIT > Environment variables** and set
+`TEST_DB_URL=jdbc:postgresql://localhost:5432/ogani_store_test`, plus `TEST_DB_USER`/`TEST_DB_PASSWORD`
+for your local PostgreSQL credentials. Configure these on the JUnit test configuration, separately from the application run configuration.
+The test deliberately fails with `Committed concurrency tests require a dedicated *_test database`
+when connected to a database without the `_test` suffix; keep this guard because these tests commit fixture data.
 Integration tests run real Flyway migrations and check catalog, role enforcement, refresh-token concurrency and uploads.
 GitHub Actions provisions its own PostgreSQL service.
 
@@ -203,7 +210,8 @@ Product editor regressions:
 - [x] Authentication (JWT + refresh token rotation) and role-based access
 - [x] Catalog API (public + admin) with filtering, sorting, pagination
 - [x] Admin dashboard UI adapted from Spark
-- [ ] Cart and coupons
+- [x] Read cart and add products with stock/concurrency validation
+- [ ] Replace cart quantities, remove items and apply coupons
 - [ ] Checkout: one transaction with stock deduction (optimistic locking), price/address snapshot and status history
 - [ ] Order management with a status state machine
 - [ ] Reviews, wishlist, customer addresses
