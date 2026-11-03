@@ -106,6 +106,13 @@ public class Order {
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_confirmed_by")
+    private User paymentConfirmedBy;
+
     @Column(name = "transaction_ref", length = 100)
     private String transactionRef;
 

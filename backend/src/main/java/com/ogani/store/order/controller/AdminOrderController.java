@@ -8,6 +8,9 @@ import com.ogani.store.order.dto.response.order.AdminOrderDetailResponse;
 import com.ogani.store.order.dto.request.order.UpdateOrderStatusRequest;
 import com.ogani.store.order.dto.response.order.AdminOrderStatusResponse;
 import com.ogani.store.order.service.AdminOrderStatusService;
+import com.ogani.store.order.service.AdminOrderPaymentService;
+import com.ogani.store.order.dto.request.order.UpdateOrderPaymentRequest;
+import com.ogani.store.order.dto.response.order.AdminOrderPaymentResponse;
 import jakarta.validation.Valid;
 import com.ogani.store.order.service.AdminOrderQueryService;
 import com.ogani.store.security.UserPrincipal;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminOrderController {
     private final AdminOrderQueryService orders;
     private final AdminOrderStatusService statuses;
+    private final AdminOrderPaymentService payments;
 
     @GetMapping
     @Operation(summary="List all orders; search historical order code/customer name/email and combine filters")
@@ -52,5 +56,12 @@ public class AdminOrderController {
     public ApiResponse<AdminOrderStatusResponse> updateStatus(@AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long id,@Valid @RequestBody UpdateOrderStatusRequest request) {
         return ApiResponse.ok(statuses.update(principal,id,request));
+    }
+
+    @PatchMapping("/{id}/payment-status")
+    @Operation(summary="Confirm COD payment as PAID while SHIPPING; requires current version; retries preserve audit")
+    public ApiResponse<AdminOrderPaymentResponse> confirmPayment(@AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id,@Valid @RequestBody UpdateOrderPaymentRequest request) {
+        return ApiResponse.ok(payments.confirm(principal,id,request));
     }
 }

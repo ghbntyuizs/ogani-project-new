@@ -55,6 +55,59 @@ class AdminOrderStatusConcurrencyIT extends AbstractIntegrationTest {
         assertEquals(1,history(orders.get(0)));assertEquals(1L,version(orders.get(0)));assertEquals(0,stock());
     }
 
+    @Test void concurrentCodPaymentConfirmsOnceAndPreservesFirstActor() throws Exception {
+        long order=orders.get(0);
+        jdbc.update("update orders set order_status='SHIPPING' where id=?",order);
+        assertEquals(List.of(200,200),contend("users",buyers.get(0),() -> pay(admin,order),() -> pay(staff,order)));
+        assertEquals(1L,version(order));
+        var audit=jdbc.queryForMap("select paid_at,payment_confirmed_by from orders where id=?",order);
+        assertNotNull(audit.get("paid_at"));
+        assertTrue(Set.of(admin.getId(),staff.getId()).contains(((Number)audit.get("payment_confirmed_by")).longValue()));
+        assertEquals(200,pay(admin,order));
+        assertEquals(audit,jdbc.queryForMap("select paid_at,payment_confirmed_by from orders where id=?",order));
+        assertEquals(0,history(order));assertEquals(7,sold());assertEquals(0,stock());
+    }
+
+    @Test void paymentAndCompletionRequireFreshVersionAndNeverCompleteUnpaid() throws Exception {
+        long order=orders.get(0);
+        jdbc.update("update orders set order_status='SHIPPING' where id=?",order);
+        var results=contend("users",buyers.get(0),() -> pay(admin,order),() -> patch(staff,order,"COMPLETED",0));
+        assertEquals(List.of(200,409),results);
+        assertEquals("SHIPPING",jdbc.queryForObject("select order_status from orders where id=?",String.class,order));
+        assertEquals(200,patch(staff,order,"COMPLETED",1));
+        assertEquals(9,sold());assertEquals(2L,version(order));assertEquals(200,pay(admin,order));
+    }
+
+    @Test void paymentDoesNotRaceCancellationIntoPaidCancelledOrder() throws Exception {
+        long order=orders.get(0);
+        assertEquals(List.of(409,200),contend("users",buyers.get(0),() -> pay(admin,order),() -> patch(staff,order,"CANCELLED",0)));
+        assertEquals("UNPAID",jdbc.queryForObject("select payment_status from orders where id=?",String.class,order));
+        assertNull(jdbc.queryForObject("select paid_at from orders where id=?",Object.class,order));
+        assertEquals(2,stock());
+    }
+
+    @Test void failedPaymentWriteRollsBackAuditAndRetrySucceeds() throws Exception {
+        long order=orders.get(0);
+        jdbc.update("update orders set order_status='SHIPPING' where id=?",order);
+        String function="payment_fail_"+UUID.randomUUID().toString().replace("-","");
+        try {
+            jdbc.execute("create function "+function+"() returns trigger language plpgsql as $$ begin if new.id="+order+" and new.payment_status='PAID' then raise exception 'Intentional payment test failure'; end if; return new; end $$");
+            jdbc.execute("create trigger "+function+" before update on orders for each row execute function "+function+"()");
+            assertEquals(500,pay(admin,order));assertEquals(0L,version(order));
+            assertEquals("UNPAID",jdbc.queryForObject("select payment_status from orders where id=?",String.class,order));
+            assertNull(jdbc.queryForObject("select paid_at from orders where id=?",Object.class,order));
+            assertNull(jdbc.queryForObject("select payment_confirmed_by from orders where id=?",Long.class,order));
+        } finally {
+            jdbc.execute("drop trigger if exists "+function+" on orders");jdbc.execute("drop function if exists "+function+"()");
+        }
+        assertEquals(200,pay(admin,order));assertEquals(1L,version(order));
+    }
+
+    private int pay(UserPrincipal principal,long order) throws Exception {
+        return mvc.perform(MockMvcRequestBuilders.patch("/api/admin/orders/"+order+"/payment-status").with(user(principal)).contentType("application/json")
+                .content("{\"paymentStatus\":\"PAID\",\"version\":0}")).andReturn().getResponse().getStatus();
+    }
+
     @Test void differentStaffTargetsCannotBothApplyFromSameVersion() throws Exception {
         var result=contend("users",buyers.get(0),() -> patch(admin,orders.get(0),"CONFIRMED",0),() -> patch(staff,orders.get(0),"CANCELLED",0));
         assertEquals(List.of(200,409),result.stream().sorted().toList());assertEquals(1,history(orders.get(0)));

@@ -57,7 +57,7 @@ public class AdminOrderQueryService {
                 new Customer(order.getUserId(),order.getFirstName(),order.getLastName(),order.getEmail(),order.getPhone()),lines,
                 new ShippingResponse(order.getShipRecipientName(),order.getPhone(),order.getShipCountry(),order.getShipAddress(),
                         order.getShipCity(),order.getShipState(),order.getShipPostcode()),
-                new Payment(order.getPaymentMethod(),order.getPaymentStatus(),order.getTransactionRef()),coupon,
+                new Payment(order.getPaymentMethod(),order.getPaymentStatus(),order.getTransactionRef(),order.getPaidAt(),order.getPaymentConfirmedById()),coupon,
                 order.getSubtotal(),order.getDiscountAmount(),order.getShippingFee(),order.getTotal(),order.getCurrency(),
                 order.getOrderStatus(),order.getOrderNotes(),timeline,order.getCreatedAt(),order.getUpdatedAt());
     }
