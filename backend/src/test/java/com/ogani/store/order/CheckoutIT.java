@@ -93,7 +93,8 @@ class CheckoutIT extends AbstractIntegrationTest {
                 .content("{\"recipientName\":\"Saved Buyer\",\"phone\":\"0901234567\",\"city\":\"HCM\",\"district\":\"Quận 1\",\"ward\":\"Bến Nghé\",\"address\":\"12 Test\"}"))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         long address=((Number)JsonPath.read(created,"$.data.id")).longValue();fresh();
-        var result=place(UUID.randomUUID().toString(),request(token(),"\"addressId\":"+address)).andExpect(status().isCreated())
+        String checkoutKey=UUID.randomUUID().toString(),checkoutBody=request(token(),"\"addressId\":"+address);
+        var result=place(checkoutKey,checkoutBody).andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.deliveryAddress.district").value("Quận 1")).andExpect(jsonPath("$.data.deliveryAddress.ward").value("Bến Nghé"))
                 .andReturn().getResponse().getContentAsString();
         long order=((Number)JsonPath.read(result,"$.data.id")).longValue();
@@ -103,6 +104,12 @@ class CheckoutIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.ward").value("Changed ward"));fresh();
         get("/api/orders/"+order,CUSTOMER).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.district").value("Quận 1"));
         get("/api/admin/orders/"+order,ADMIN).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.ward").value("Bến Nghé"));
+        mvc.perform(MockMvcRequestBuilders.delete("/api/addresses/{id}",address).with(user(buyer))).andExpect(status().isOk());fresh();
+        assertEquals(0,jdbc.queryForObject("select count(*) from customer_addresses where id=?",Integer.class,address));
+        get("/api/orders/"+order,CUSTOMER).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.district").value("Quận 1"));
+        get("/api/admin/orders/"+order,ADMIN).andExpect(status().isOk()).andExpect(jsonPath("$.data.deliveryAddress.ward").value("Bến Nghé"));
+        place(checkoutKey,checkoutBody).andExpect(status().isOk()).andExpect(jsonPath("$.data.id").value(order))
+                .andExpect(jsonPath("$.data.deliveryAddress.address").value("12 Test"));
     }
 
     @Test void foreignAddressAndConflictingAddressSourcesAreRejected() throws Exception {

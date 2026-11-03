@@ -60,6 +60,8 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/addresses").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.PUT,"/api/addresses/*").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.DELETE,"/api/addresses/*").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.PATCH,"/api/addresses/*/default").hasRole("CUSTOMER")
                         .requestMatchers("/api/admin/**")
                         .hasAnyRole("ADMIN", "STAFF")
                         .anyRequest().authenticated()

@@ -29,7 +29,7 @@ An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, 
 - Customer address creation/update with a 10-address limit, atomic default selection and delivery snapshots
 
 **Designed in the database, API still to build:** coupons, refunds,
-product reviews, wishlist, customer address deletion/default-only updates, blog (posts, tags, comments), banners, contact messages,
+product reviews, wishlist, blog (posts, tags, comments), banners, contact messages,
 newsletter, store settings. JPA entities for all of them already exist.
 
 ## Tech stack
@@ -183,6 +183,8 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | POST | `/api/checkout` | authenticated; COD order, required UUID `Idempotency-Key` |
 | POST | `/api/addresses` | CUSTOMER; Vietnam delivery address, maximum10, automatic/atomic default selection |
 | PUT | `/api/addresses/{id}` | CUSTOMER; replace owned address fields, atomic default switching, existing order snapshots preserved |
+| DELETE | `/api/addresses/{id}` | CUSTOMER; delete owned address, oldest remaining address replaces deleted default |
+| PATCH | `/api/addresses/{id}/default` | CUSTOMER; select owned default atomically, no body, safe repeated selection |
 | GET | `/api/orders/{id}` | authenticated; own order snapshot |
 | GET | `/api/orders` | authenticated; own summaries, page/size/status, sort=createdAt,desc or createdAt,asc |
 | POST | `/api/orders/{id}/cancel` | authenticated; cancel own PENDING/UNPAID/COD order and restore stock once |
@@ -237,7 +239,8 @@ Product editor regressions:
 - [x] Admin/Staff order detail with immutable order snapshots and coherent status timeline
 - [x] Create customer delivery addresses with validation, default selection and checkout snapshots
 - [x] Update owned customer delivery addresses and switch defaults atomically
-- [ ] Reviews, wishlist, customer address delete/default-only APIs
+- [x] Delete owned addresses and select defaults with transaction/concurrency protection
+- [ ] Reviews and wishlist
 - [ ] Blog, banners, contact form, newsletter, store settings
 - [x] Connect admin authentication, products, categories and gallery to the API
 - [ ] Restore the missing storefront source and connect customer flows

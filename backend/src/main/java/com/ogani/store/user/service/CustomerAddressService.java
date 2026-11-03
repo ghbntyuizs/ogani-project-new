@@ -60,6 +60,37 @@ public class CustomerAddressService {
         return customer;
     }
 
+    @Transactional
+    public void delete(UserPrincipal principal,Long id) {
+        var customer=owner(principal);
+        var address=ownedAddress(id,customer.getId());
+        addresses.delete(address);
+        // Hibernate can order updates before deletes: release the unique default first.
+        addresses.flush();
+        if(!addresses.existsByUserIdAndDefaultAddressTrue(customer.getId())) {
+            addresses.findFirstByUserIdOrderByIdAsc(customer.getId()).ifPresent(replacement -> {
+                replacement.setDefaultAddress(true);
+                addresses.flush();
+            });
+        }
+    }
+
+    @Transactional
+    public SavedAddressResponse setDefault(UserPrincipal principal,Long id) {
+        var customer=owner(principal);
+        var address=ownedAddress(id,customer.getId());
+        addresses.clearOtherDefaults(customer.getId(),id);
+        address.setDefaultAddress(true);
+        addresses.flush();
+        return response(address);
+    }
+
+    private CustomerAddress ownedAddress(Long id,Long userId) {
+        if(id==null || id<=0) throw new AppException(ErrorCode.VALIDATION_ERROR);
+        return addresses.findByIdAndUserId(id,userId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND,"Address"));
+    }
+
     private void validate(CreateAddressRequest request) {
         if(request==null || !validator.validate(request).isEmpty()) throw new AppException(ErrorCode.VALIDATION_ERROR);
     }

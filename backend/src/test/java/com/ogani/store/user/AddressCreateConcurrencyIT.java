@@ -99,6 +99,70 @@ class AddressCreateConcurrencyIT extends AbstractIntegrationTest {
                 .replace("12 Nguyễn Huệ",marker);
         return mvc.perform(MockMvcRequestBuilders.put("/api/addresses/{id}",id).with(user(principal)).contentType("application/json").content(body)).andReturn().getResponse().getStatus();
     }
+    @Test void concurrentDefaultSelectionsKeepExactlyOneDefault() throws Exception {
+        var ids=twoAddresses();
+        assertEquals(List.of(200,200),contend(() -> selectDefault(ids.get(0)),() -> selectDefault(ids.get(1))));
+        assertEquals(2,count());assertEquals(1,defaults());
+        assertEquals(List.of(200,200),contend(() -> selectDefault(ids.get(0)),() -> selectDefault(ids.get(0))));
+        assertEquals(ids.get(0),jdbc.queryForObject("select id from customer_addresses where user_id=? and is_default",Long.class,buyer));
+    }
+    @Test void deletingDefaultAndSelectingAnotherSerializeSafely() throws Exception {
+        var ids=twoAddresses();
+        assertEquals(List.of(200,200),contend(() -> remove(ids.get(0)),() -> selectDefault(ids.get(1))));
+        assertEquals(1,count());assertEquals(1,defaults());
+        assertEquals(ids.get(1),jdbc.queryForObject("select id from customer_addresses where user_id=? and is_default",Long.class,buyer));
+    }
+    @Test void deletingAddressWhileSelectingItCannotResurrectIt() throws Exception {
+        var ids=twoAddresses();
+        var result=contend(() -> remove(ids.get(1)),() -> selectDefault(ids.get(1)));
+        assertEquals(200,result.get(0));assertTrue(Set.of(200,404).contains(result.get(1)));
+        assertEquals(1,count());assertEquals(1,defaults());
+        assertEquals(0,jdbc.queryForObject("select count(*) from customer_addresses where id=?",Integer.class,ids.get(1)));
+    }
+    @Test void concurrentDeletingLastAddressesLeavesEmptyAndNextCreateDefaults() throws Exception {
+        var ids=twoAddresses();
+        assertEquals(List.of(200,200),contend(() -> remove(ids.get(0)),() -> remove(ids.get(1))));
+        assertEquals(0,count());assertEquals(0,defaults());
+        assertEquals(201,create(false));assertEquals(1,count());assertEquals(1,defaults());
+    }
+    @Test void concurrentRepeatedDeleteHasOneSuccessAndOneNotFound() throws Exception {
+        var ids=twoAddresses();
+        assertEquals(List.of(200,404),contend(() -> remove(ids.get(0)),() -> remove(ids.get(0))).stream().sorted().toList());
+        assertEquals(1,count());assertEquals(1,defaults());
+    }
+    @Test void deleteAndCreateAtCapCannotBreakLimitOrDefault() throws Exception {
+        for(int i=0;i<10;i++) assertEquals(201,create(false));
+        long id=jdbc.queryForObject("select id from customer_addresses where user_id=? and is_default",Long.class,buyer);
+        var result=contend(() -> remove(id),() -> create(true));
+        assertEquals(200,result.get(0));assertTrue(Set.of(201,409).contains(result.get(1)));
+        assertEquals(result.get(1)==201?10:9,count());assertEquals(1,defaults());
+    }
+    @Test void failedDefaultSelectionRollsBackPreviousDefault() throws Exception { failsAndRetries(false); }
+    @Test void failedReplacementAfterDeleteRestoresDeletedAddressAndDefault() throws Exception { failsAndRetries(true); }
+    void failsAndRetries(boolean remove) throws Exception {
+        var ids=twoAddresses();
+        var before=jdbc.queryForList("select * from customer_addresses where user_id=? order by id",buyer);
+        String function="address_fail_"+UUID.randomUUID().toString().replace("-","");
+        try {
+            jdbc.execute("create function "+function+"() returns trigger language plpgsql as $$ begin if new.id="+ids.get(1)+" and new.is_default then raise exception 'Intentional default write failure'; end if; return new; end $$");
+            jdbc.execute("create trigger "+function+" before update on customer_addresses for each row execute function "+function+"()");
+            assertEquals(500,remove?remove(ids.get(0)):selectDefault(ids.get(1)));
+            assertEquals(before,jdbc.queryForList("select * from customer_addresses where user_id=? order by id",buyer));
+        } finally {
+            jdbc.execute("drop trigger if exists "+function+" on customer_addresses");jdbc.execute("drop function if exists "+function+"()");
+        }
+        assertEquals(200,remove?remove(ids.get(0)):selectDefault(ids.get(1)));assertEquals(1,defaults());
+    }
+    List<Long> twoAddresses() throws Exception {
+        assertEquals(201,create(false));assertEquals(201,create(false));
+        return jdbc.queryForList("select id from customer_addresses where user_id=? order by id",Long.class,buyer);
+    }
+    int selectDefault(long id) throws Exception {
+        return mvc.perform(MockMvcRequestBuilders.patch("/api/addresses/{id}/default",id).with(user(principal))).andReturn().getResponse().getStatus();
+    }
+    int remove(long id) throws Exception {
+        return mvc.perform(MockMvcRequestBuilders.delete("/api/addresses/{id}",id).with(user(principal))).andReturn().getResponse().getStatus();
+    }
     int count() { return jdbc.queryForObject("select count(*) from customer_addresses where user_id=?",Integer.class,buyer); }
     int defaults() { return jdbc.queryForObject("select count(*) from customer_addresses where user_id=? and is_default",Integer.class,buyer); }
     List<Integer> contend(boolean makeDefault) throws Exception {

@@ -24,6 +24,6 @@ The customer row is locked before looking up the owned address, matching create/
 
 Existing order snapshots are unchanged. The checkout regression now updates the saved address through this PUT API after placing an order and verifies that customer/admin order responses still contain the original district/ward.
 
-No migration, frontend integration, commit or push is included. Read addresses via GET /api/checkout/addresses. DELETE and default-only PATCH remain separate pending features.
+No migration, frontend integration, commit or push is included. Read addresses via GET /api/checkout/addresses. DELETE and default-only PATCH are documented in [address deletion/default selection](customer-address-delete-default-verification.md).
 
 Verification: initial17 API cases produced16 missing-route failures (one access case already passed);68 related cases passed after implementation. Final suite:11 unit +583 integration =594 passed, zero failures/errors/skips. This feature adds23 cases:19 update API and4 committed concurrency/rollback. The checkout snapshot regression now uses the actual PUT endpoint. Independent review found no important defect. Diff check passed; unique address fixtures and injected triggers were cleaned (zero remaining entries).

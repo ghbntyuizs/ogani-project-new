@@ -66,6 +66,23 @@ class CheckoutConcurrencyIT extends AbstractIntegrationTest {
         assertEquals(1,orderCount()); assertEquals(4,stock());
     }
 
+    @Test void checkoutAndAddressDeletionCannotLeavePartialOrderOrStockChanges() throws Exception {
+        long address=jdbc.queryForObject("insert into customer_addresses(user_id,recipient_name,phone,address_line,city,district,ward,is_default) values(?,'Original recipient','0901234567','Original street','HCM','Original district','Original ward',true) returning id",Long.class,first.getId());
+        String body="{\"cartToken\":\""+quote(first)+"\",\"firstName\":\"Checkout\",\"lastName\":\"Buyer\",\"email\":\"buyer@example.test\",\"paymentMethod\":\"COD\",\"addressId\":"+address+"}";
+        var results=contend("users",first.getId(),() -> place(first,UUID.randomUUID().toString(),body),() ->
+                result(mvc.perform(MockMvcRequestBuilders.delete("/api/addresses/{id}",address).with(user(first))).andReturn().getResponse()));
+        assertEquals(200,results.get(1).status());
+        assertEquals(0,jdbc.queryForObject("select count(*) from customer_addresses where id=?",Integer.class,address));
+        if(results.get(0).status()==201) {
+            assertEquals(1,orderCount());assertEquals(4,stock());
+            assertEquals("Original street",jdbc.queryForObject("select ship_address from orders where id=?",String.class,results.get(0).id()));
+            assertEquals("Original ward",jdbc.queryForObject("select ship_ward from orders where id=?",String.class,results.get(0).id()));
+        } else {
+            assertEquals(404,results.get(0).status());assertEquals(0,orderCount());assertEquals(5,stock());
+            assertEquals(1,jdbc.queryForObject("select sum(ci.quantity) from cart_items ci join carts c on c.id=ci.cart_id where c.user_id=?",Integer.class,first.getId()));
+        }
+    }
+
     @Test void differentKeysCannotCreateTwoOrdersFromOneCart() throws Exception {
         String body=request(quote(first));
         var results=contend("users",first.getId(),() -> place(first,UUID.randomUUID().toString(),body),() -> place(first,UUID.randomUUID().toString(),body));

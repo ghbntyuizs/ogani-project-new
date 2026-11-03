@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface CustomerAddressRepository extends JpaRepository<CustomerAddress,Long> {
     Optional<CustomerAddress> findByIdAndUserId(Long id, Long userId);
+    Optional<CustomerAddress> findFirstByUserIdOrderByIdAsc(Long userId);
     List<CustomerAddress> findByUserIdOrderByDefaultAddressDescIdAsc(Long userId);
     long countByUserId(Long userId);
     boolean existsByUserIdAndDefaultAddressTrue(Long userId);
