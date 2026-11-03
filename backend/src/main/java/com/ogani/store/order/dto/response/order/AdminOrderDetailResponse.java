@@ -14,7 +14,7 @@ public record AdminOrderDetailResponse(Long id,String orderCode,Long version,Cus
         List<History> statusHistory,LocalDateTime createdAt,LocalDateTime updatedAt) {
     public record Customer(Long userId,String firstName,String lastName,String email,String phone) {}
     public record Item(Long itemId,Long productId,String productName,BigDecimal unitPrice,Integer quantity,BigDecimal lineTotal) {}
-    public record Payment(PaymentMethod method,PaymentStatus status,String transactionRef) {}
+    public record Payment(PaymentMethod method,PaymentStatus status,String transactionRef,LocalDateTime paidAt,Long confirmedBy) {}
     public record Coupon(Long id,String code) {}
     public record Actor(Long id,String name) {}
     public record History(Long id,String fromStatus,String toStatus,String note,Actor changedBy,LocalDateTime changedAt) {}

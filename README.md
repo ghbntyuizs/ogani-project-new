@@ -185,6 +185,7 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | GET | `/api/admin/orders` | ADMIN/STAFF; all orders, keyword/status/paymentStatus/dateFrom/dateTo/page/size/sort |
 | GET | `/api/admin/orders/{id}` | ADMIN/STAFF; historical customer/items/shipping/payment/coupon and status timeline |
 | PATCH | `/api/admin/orders/{id}/status` | ADMIN/STAFF; status/version/note, state machine, PAID-only completion |
+| PATCH | `/api/admin/orders/{id}/payment-status` | ADMIN/STAFF; COD PAID confirmation while SHIPPING, version and immutable confirmation audit |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -226,7 +227,8 @@ Product editor regressions:
 - [ ] Apply coupons
 - [x] COD checkout: preview, saved/new delivery address, idempotent placement, atomic stock deduction, snapshots and initial status history
 - [x] Admin/Staff status state machine, version checks, audit history and exactly-once stock/sale effects
-- [ ] Separate COD payment confirmation and refund workflows
+- [x] COD payment confirmation with version checks, actor/time audit and safe retries
+- [ ] Refund workflows
 - [x] Admin/Staff order list with search, status/payment/day filters and stable pagination
 - [x] Admin/Staff order detail with immutable order snapshots and coherent status timeline
 - [ ] Reviews, wishlist, customer addresses
@@ -243,6 +245,8 @@ Admin/Staff order search and filters: [API and verification](docs/admin-order-li
 Admin/Staff order detail and timeline: [API and verification](docs/admin-order-detail-verification.md).
 
 Admin order status transitions and payment constraints: [API and verification](docs/admin-order-status-verification.md).
+
+COD payment confirmation: [API and verification](docs/cod-payment-verification.md).
 
 ## Credits
 

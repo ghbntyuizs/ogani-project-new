@@ -32,6 +32,8 @@ public interface AdminOrderDetailView {
     PaymentMethod getPaymentMethod();
     PaymentStatus getPaymentStatus();
     String getTransactionRef();
+    LocalDateTime getPaidAt();
+    Long getPaymentConfirmedById();
     OrderStatus getOrderStatus();
     LocalDateTime getCreatedAt();
     LocalDateTime getUpdatedAt();

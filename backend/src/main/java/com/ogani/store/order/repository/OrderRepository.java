@@ -38,7 +38,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
                    o.subtotal as subtotal, o.discountAmount as discountAmount, o.shippingFee as shippingFee,
                    o.total as total, o.currency as currency, o.coupon.id as couponId, o.couponCode as couponCode,
                    o.paymentMethod as paymentMethod, o.paymentStatus as paymentStatus,
-                   o.transactionRef as transactionRef, o.orderStatus as orderStatus,
+                   o.transactionRef as transactionRef, o.paidAt as paidAt, o.paymentConfirmedBy.id as paymentConfirmedById, o.orderStatus as orderStatus,
                    o.createdAt as createdAt, o.updatedAt as updatedAt
             from Order o where o.id=:id
             """)

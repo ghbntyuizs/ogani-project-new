@@ -47,12 +47,16 @@ Cập nhật: 2026-11-03. Endpoint chưa hoàn thành là đề xuất, có th�
   - [x] Hủy hoàn kho; hoàn tất tăng sold_count đúng một lần; giữ snapshot/payment/cart.
   - [x] Race giữa staff/customer, product counters, owner thay đổi và rollback.
   - [x] [Tài liệu và kiểm thử](admin-order-status-verification.md).
-- [ ] **PATCH `/api/admin/orders/{id}/payment-status`** — Xác nhận thu tiền COD theo quyền.
-- [ ] Chặn chuyển trạng thái sai, chống thao tác lặp/đồng thời.
-- [ ] Hủy đơn hoàn kho đúng một lần; hoàn tất tăng sold_count đúng một lần.
-- [ ] Liên kết quy tắc COMPLETED/PAID và lưu người thực hiện, thời gian, lý do.
+- [x] **PATCH `/api/admin/orders/{id}/payment-status`** — Admin/Staff xác nhận COD UNPAID → PAID khi SHIPPING.
+  - [x] Validate dữ liệu, quyền hiện tại, phương thức và trạng thái đơn.
+  - [x] Lưu thời điểm/người xác nhận; retry giữ nguyên audit và version.
+  - [x] Chống cập nhật đồng thời với xác nhận khác, hoàn tất và hủy đơn; rollback khi ghi thất bại.
+  - [x] [Tài liệu API và kiểm thử](cod-payment-verification.md).
+- [x] Chặn chuyển trạng thái sai, chống thao tác lặp/đồng thời.
+- [x] Hủy đơn hoàn kho đúng một lần; hoàn tất tăng sold_count đúng một lần.
+- [x] Liên kết quy tắc COMPLETED/PAID và lưu người thực hiện, thời gian.
 
-API trạng thái và thanh toán có thể gộp lại khi chốt nghiệp vụ; không cập nhật tùy ý các enum.
+API trạng thái và xác nhận thanh toán được tách riêng; không cập nhật tùy ý các enum. Hoàn tiền là luồng riêng chưa triển khai.
 
 ## 3. Địa chỉ giao hàng
 

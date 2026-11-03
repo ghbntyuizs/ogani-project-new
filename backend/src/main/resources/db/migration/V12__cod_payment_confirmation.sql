@@ -1,0 +1,2 @@
+ALTER TABLE orders ADD COLUMN paid_at TIMESTAMP;
+ALTER TABLE orders ADD COLUMN payment_confirmed_by BIGINT REFERENCES users(id) ON DELETE SET NULL;
