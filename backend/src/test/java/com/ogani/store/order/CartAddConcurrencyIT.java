@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -130,6 +131,154 @@ class CartAddConcurrencyIT extends AbstractIntegrationTest {
         assertNoCart();
     }
 
+    @Test void concurrentAbsoluteUpdatesSerializeWithoutChangingInventory() throws Exception {
+        assertEquals(200, add(4));
+        assertEquals(List.of(200, 200), concurrentRequests(() -> update(3), () -> update(7)));
+        assertTrue(List.of(3, 7).contains(storedQuantity()));
+        assertEquals(10, jdbc.queryForObject("select stock_quantity from products where id=?", Integer.class, productId));
+        assertEquals(0L, jdbc.queryForObject("select version from products where id=?", Long.class, productId));
+    }
+
+    @Test void concurrentAddAndUpdateHaveAValidSerialOutcome() throws Exception {
+        assertEquals(200, add(4));
+        assertEquals(List.of(200, 200), concurrentRequests(() -> add(2), () -> update(3)));
+        assertTrue(List.of(3, 5).contains(storedQuantity()));
+    }
+
+    @Test void concurrentAddAndReductionRespectStockAndRollback() throws Exception {
+        assertEquals(200, add(8));
+        var results = concurrentRequests(() -> add(3), () -> update(2));
+        assertEquals(200, results.get(1));
+        assertTrue(List.of(200, 409).contains(results.get(0)));
+        assertStoredQuantity(results.get(0) == 200 ? 5 : 2);
+    }
+
+    @ParameterizedTest @ValueSource(strings={"stock", "hidden"})
+    void updateWaitsForCatalogWriteAndValidatesCommittedState(String change) throws Exception {
+        assertEquals(200, add(4));
+        var pool = Executors.newSingleThreadExecutor();
+        var requests = new ArrayList<Future<Integer>>();
+        try {
+            new TransactionTemplate(transactionManager).executeWithoutResult(transaction -> {
+                jdbc.update(change.equals("stock")
+                        ? "update products set stock_quantity=1 where id=?"
+                        : "update products set status='HIDDEN' where id=?", productId);
+                requests.add(pool.submit(() -> update(2)));
+                awaitBlockedQueries("products", 1);
+                assertFalse(requests.get(0).isDone());
+            });
+            assertEquals(409, requests.get(0).get(15, TimeUnit.SECONDS));
+            assertStoredQuantity(4);
+        } finally {
+            pool.shutdownNow();
+            assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS));
+        }
+    }
+
+    @Test void staleAuthenticatedPrincipalCannotUpdateAfterAccountIsBlocked() throws Exception {
+        assertEquals(200, add(4));
+        jdbc.update("update users set status='BLOCKED' where id=?", userId);
+        assertEquals(401, update(2));
+        assertStoredQuantity(4);
+    }
+
+    @Test void absoluteUpdateAndRepeatAdvanceCartTimestamp() throws Exception {
+        assertEquals(200, add(4));
+        LocalDateTime old = LocalDateTime.of(2000, 1, 1, 0, 0);
+        for (int quantity : new int[]{3, 3}) {
+            jdbc.update("update carts set updated_at=? where user_id=?", old, userId);
+            assertEquals(200, update(quantity));
+            assertStoredQuantity(quantity);
+            assertTrue(jdbc.queryForObject("select updated_at from carts where user_id=?", LocalDateTime.class, userId).isAfter(old));
+        }
+    }
+
+    private int update(int quantity) throws Exception {
+        Long itemId = jdbc.queryForObject("select ci.id from cart_items ci join carts c on c.id=ci.cart_id where c.user_id=? and ci.product_id=?",
+                Long.class, userId, productId);
+        return mvc.perform(MockMvcRequestBuilders.put("/api/cart/items/"+itemId).with(user(principal))
+                .contentType("application/json").content("{\"quantity\":"+quantity+"}"))
+                .andReturn().getResponse().getStatus();
+    }
+
+    @Test void concurrentZeroAndDeleteRemoveOnlyOnce() throws Exception {
+        assertEquals(200, add(4));
+        long id = currentItemId();
+        assertEquals(List.of(200,404), concurrentRequests(() -> remove(id, false), () -> remove(id, true))
+                .stream().sorted().toList());
+        assertEmptyCart();
+    }
+
+    @Test void concurrentRemoveAndAddHaveAValidSerialOutcome() throws Exception {
+        assertEquals(200, add(4));
+        long id = currentItemId();
+        assertEquals(List.of(200,200), concurrentRequests(() -> remove(id, true), () -> add(2)));
+        int remaining = jdbc.queryForObject("select count(*) from cart_items where cart_id=(select id from carts where user_id=?)", Integer.class, userId);
+        if (remaining == 0) assertEmptyCart();
+        else {
+            assertEquals(1, remaining);
+            assertStoredQuantity(2);
+            assertNotEquals(id, currentItemId());
+        }
+    }
+
+    @Test void concurrentRemoveAndPositiveUpdateCannotResurrectDeletedItem() throws Exception {
+        assertEquals(200, add(4));
+        long id = currentItemId();
+        var results = concurrentRequests(() -> remove(id, true), () -> update(3));
+        assertEquals(200, results.get(0));
+        assertTrue(List.of(200,404).contains(results.get(1)));
+        assertEmptyCart();
+    }
+
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void removalDoesNotWaitForCatalogAvailabilityUpdate(boolean useDelete) throws Exception {
+        assertEquals(200, add(4));
+        long id = currentItemId();
+        var pool = Executors.newSingleThreadExecutor();
+        try {
+            new TransactionTemplate(transactionManager).executeWithoutResult(transaction -> {
+                jdbc.update("update products set status='HIDDEN',stock_quantity=0 where id=?", productId);
+                var request = pool.submit(() -> remove(id, useDelete));
+                try {
+                    assertEquals(200, request.get(5, TimeUnit.SECONDS));
+                } catch (Exception ex) {
+                    throw new AssertionError("Removal must not wait for product availability locks", ex);
+                }
+            });
+            assertEmptyCart();
+            assertEquals("HIDDEN", jdbc.queryForObject("select status from products where id=?", String.class, productId));
+        } finally {
+            pool.shutdownNow();
+            assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS));
+        }
+    }
+
+    @ParameterizedTest @ValueSource(booleans={false,true})
+    void stalePrincipalCannotRemoveAfterAccountIsBlocked(boolean useDelete) throws Exception {
+        assertEquals(200, add(4));
+        long id = currentItemId();
+        jdbc.update("update users set status='BLOCKED' where id=?", userId);
+        assertEquals(401, remove(id, useDelete));
+        assertStoredQuantity(4);
+    }
+
+    private long currentItemId() {
+        return jdbc.queryForObject("select ci.id from cart_items ci join carts c on c.id=ci.cart_id where c.user_id=? and ci.product_id=?",
+                Long.class, userId, productId);
+    }
+
+    private int remove(long id, boolean useDelete) throws Exception {
+        var request = useDelete ? MockMvcRequestBuilders.delete("/api/cart/items/"+id)
+                : MockMvcRequestBuilders.put("/api/cart/items/"+id).contentType("application/json").content("{\"quantity\":0}");
+        return mvc.perform(request.with(user(principal))).andReturn().getResponse().getStatus();
+    }
+
+    private void assertEmptyCart() {
+        assertEquals(1, jdbc.queryForObject("select count(*) from carts where user_id=?", Integer.class, userId));
+        assertEquals(0, jdbc.queryForObject("select count(*) from cart_items where cart_id=(select id from carts where user_id=?)", Integer.class, userId));
+    }
+
     private int add(int quantity) throws Exception {
         var response = mvc.perform(MockMvcRequestBuilders.post("/api/cart/items").with(user(principal))
                 .contentType("application/json")
@@ -142,13 +291,17 @@ class CartAddConcurrencyIT extends AbstractIntegrationTest {
     }
 
     private List<Integer> concurrentAdds(int first, int second) throws Exception {
+        return concurrentRequests(() -> add(first), () -> add(second));
+    }
+
+    private List<Integer> concurrentRequests(Callable<Integer> first, Callable<Integer> second) throws Exception {
         var pool = Executors.newFixedThreadPool(2);
         var requests = new ArrayList<Future<Integer>>();
         try {
             new TransactionTemplate(transactionManager).executeWithoutResult(transaction -> {
                 jdbc.queryForObject("select id from users where id=? for update", Long.class, userId);
-                requests.add(pool.submit(() -> add(first)));
-                requests.add(pool.submit(() -> add(second)));
+                requests.add(pool.submit(first));
+                requests.add(pool.submit(second));
                 // Observe both requests blocked in PostgreSQL before releasing the user lock.
                 awaitBlockedQueries("users", 2);
                 assertFalse(requests.get(0).isDone());
@@ -185,7 +338,11 @@ class CartAddConcurrencyIT extends AbstractIntegrationTest {
     }
 
     private void assertStoredQuantity(int expected) {
-        assertEquals(expected, jdbc.queryForObject("select ci.quantity from cart_items ci join carts c on c.id=ci.cart_id where c.user_id=? and ci.product_id=?",
-                Integer.class, userId, productId));
+        assertEquals(expected, storedQuantity());
+    }
+
+    private int storedQuantity() {
+        return jdbc.queryForObject("select ci.quantity from cart_items ci join carts c on c.id=ci.cart_id where c.user_id=? and ci.product_id=?",
+                Integer.class, userId, productId);
     }
 }
