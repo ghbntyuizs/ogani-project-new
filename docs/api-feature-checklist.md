@@ -15,10 +15,10 @@ Cập nhật: 2026-11-03. Endpoint chưa hoàn thành là đề xuất, có th�
   - [x] Customer/Admin/Staff chỉ thấy đơn của chính mình; không chọn userId tùy ý.
   - [x] Payload tóm tắt không chứa checkout key/hash, địa chỉ hoặc thông tin item.
   - [x] Kiểm thử33 trường hợp. Chi tiết: [Order list](customer-order-list-verification.md).
-- [ ] **POST `/api/orders/{id}/cancel`** — Hủy đơn của mình trong trạng thái cho phép.
-  - [ ] Chốt trạng thái được hủy và quyền của customer.
-  - [ ] Hoàn kho đúng một lần, xử lý trạng thái OUT_OF_STOCK khi hoàn.
-  - [ ] Chống hủy đồng thời, ghi lịch sử và giữ snapshot đơn.
+- [x] **POST `/api/orders/{id}/cancel`** — Hủy đơn của mình khi PENDING/COD/UNPAID.
+  - [x] Kiểm tra quyền, trạng thái và thanh toán; retry đơn đã hủy giữ nguyên kết quả.
+  - [x] Hoàn kho đúng một lần, xử lý trạng thái OUT_OF_STOCK khi hoàn.
+  - [x] Chống hủy đồng thời, ghi lịch sử và giữ snapshot đơn.
 
 Đã có: GET `/api/orders/{id}` và checkout COD. API danh sách customer không thay thế API danh sách toàn bộ đơn cho admin.
 
@@ -60,12 +60,17 @@ API trạng thái và xác nhận thanh toán được tách riêng; không cậ
 
 ## 3. Địa chỉ giao hàng
 
-- [ ] **POST `/api/addresses`** — Lưu địa chỉ mới.
+- [x] **POST `/api/addresses`** — Lưu địa chỉ mới cho customer đang đăng nhập.
+  - [x] Validate tên, số điện thoại Việt Nam, tỉnh/thành, quận/huyện, phường/xã, địa chỉ chi tiết.
+  - [x] Chuẩn hóa khoảng trắng, giới hạn 10 địa chỉ/customer.
+  - [x] Địa chỉ đầu tiên mặc định; thay mặc định nguyên tử, chống request tạo đồng thời.
+  - [x] Snapshot quận/huyện, phường/xã khi checkout; giữ tương thích dữ liệu cũ.
+  - [x] [Tài liệu API và kiểm thử](customer-address-verification.md).
 - [ ] **PUT `/api/addresses/{id}`** — Sửa địa chỉ của mình.
 - [ ] **DELETE `/api/addresses/{id}`** — Xóa địa chỉ của mình.
 - [ ] **PATCH `/api/addresses/{id}/default`** — Chọn địa chỉ mặc định.
 - [ ] Chốt quy tắc địa chỉ mặc định khi tạo/xóa; chống nhiều địa chỉ mặc định do request đồng thời.
-- [ ] Không ảnh hưởng địa chỉ snapshot của đơn cũ.
+- [x] Không ảnh hưởng địa chỉ snapshot của đơn cũ.
 
 Đã có GET `/api/checkout/addresses` để lấy danh sách địa chỉ đã lưu và chọn khi checkout.
 

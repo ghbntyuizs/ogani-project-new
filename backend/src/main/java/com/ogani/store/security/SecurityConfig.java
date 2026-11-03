@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 "/api/categories/**",
                                 "/api/images/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/addresses").hasRole("CUSTOMER")
                         .requestMatchers("/api/admin/**")
                         .hasAnyRole("ADMIN", "STAFF")
                         .anyRequest().authenticated()

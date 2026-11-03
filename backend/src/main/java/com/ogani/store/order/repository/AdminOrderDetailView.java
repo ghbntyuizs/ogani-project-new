@@ -19,6 +19,8 @@ public interface AdminOrderDetailView {
     String getShipCountry();
     String getShipAddress();
     String getShipCity();
+    String getShipDistrict();
+    String getShipWard();
     String getShipState();
     String getShipPostcode();
     String getOrderNotes();
