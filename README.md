@@ -183,6 +183,7 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | GET | `/api/orders` | authenticated; own summaries, page/size/status, sort=createdAt,desc or createdAt,asc |
 | POST | `/api/orders/{id}/cancel` | authenticated; cancel own PENDING/UNPAID/COD order and restore stock once |
 | GET | `/api/admin/orders` | ADMIN/STAFF; all orders, keyword/status/paymentStatus/dateFrom/dateTo/page/size/sort |
+| GET | `/api/admin/orders/{id}` | ADMIN/STAFF; historical customer/items/shipping/payment/coupon and status timeline |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -225,6 +226,7 @@ Product editor regressions:
 - [x] COD checkout: preview, saved/new delivery address, idempotent placement, atomic stock deduction, snapshots and initial status history
 - [ ] Order management with a status state machine
 - [x] Admin/Staff order list with search, status/payment/day filters and stable pagination
+- [x] Admin/Staff order detail with immutable order snapshots and coherent status timeline
 - [ ] Reviews, wishlist, customer addresses
 - [ ] Blog, banners, contact form, newsletter, store settings
 - [x] Connect admin authentication, products, categories and gallery to the API
@@ -235,6 +237,8 @@ Product editor regressions:
 Checkout API examples, shipping/confirmation rules and verification: [COD checkout](docs/cod-checkout-verification.md).
 
 Admin/Staff order search and filters: [API and verification](docs/admin-order-list-verification.md).
+
+Admin/Staff order detail and timeline: [API and verification](docs/admin-order-detail-verification.md).
 
 ## Credits
 

@@ -21,4 +21,19 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from Order o where o.id=:id and o.user.id=:userId")
     Optional<Order> findOwnedByIdForUpdate(Long id, Long userId);
+
+    @Query("""
+            select o.id as id, o.orderCode as orderCode, o.version as version, o.user.id as userId,
+                   o.firstName as firstName, o.lastName as lastName, o.email as email, o.phone as phone,
+                   o.shipRecipientName as shipRecipientName, o.shipCountry as shipCountry,
+                   o.shipAddress as shipAddress, o.shipCity as shipCity, o.shipState as shipState,
+                   o.shipPostcode as shipPostcode, o.orderNotes as orderNotes,
+                   o.subtotal as subtotal, o.discountAmount as discountAmount, o.shippingFee as shippingFee,
+                   o.total as total, o.currency as currency, o.coupon.id as couponId, o.couponCode as couponCode,
+                   o.paymentMethod as paymentMethod, o.paymentStatus as paymentStatus,
+                   o.transactionRef as transactionRef, o.orderStatus as orderStatus,
+                   o.createdAt as createdAt, o.updatedAt as updatedAt
+            from Order o where o.id=:id
+            """)
+    Optional<AdminOrderDetailView> findAdminDetailById(Long id);
 }
