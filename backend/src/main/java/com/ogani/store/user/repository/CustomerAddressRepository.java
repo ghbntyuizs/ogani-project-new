@@ -15,4 +15,7 @@ public interface CustomerAddressRepository extends JpaRepository<CustomerAddress
     @Modifying
     @Query("update CustomerAddress a set a.defaultAddress=false where a.user.id=:userId and a.defaultAddress=true")
     int clearDefault(Long userId);
+    @Modifying
+    @Query("update CustomerAddress a set a.defaultAddress=false where a.user.id=:userId and a.id<>:addressId and a.defaultAddress=true")
+    int clearOtherDefaults(Long userId,Long addressId);
 }
