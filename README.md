@@ -26,7 +26,7 @@ An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, 
 - Admin category CRUD, product gallery operations and validated local PNG/JPEG uploads
 - Cart read/add/update/remove API with stock validation and concurrent-write protection (reading an empty cart does not create database records)
 
-**Designed in the database, API still to build:** cart item removal, coupons, checkout and orders (with status history),
+**Designed in the database, API still to build:** coupons, order listing/management and status transitions,
 product reviews, wishlist, customer addresses, blog (posts, tags, comments), banners, contact messages,
 newsletter, store settings. JPA entities for all of them already exist.
 
@@ -176,6 +176,10 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 | POST | `/api/cart/items` | authenticated; add `{ "productId": 1, "quantity": 2 }` |
 | PUT | `/api/cart/items/{itemId}` | authenticated; replace quantity with `{ "quantity": 3 }`; quantity 0 removes item |
 | DELETE | `/api/cart/items/{itemId}` | authenticated; remove owned item and return updated cart |
+| POST | `/api/checkout/preview` | authenticated; current cart, prices, shipping and confirmation token |
+| GET | `/api/checkout/addresses` | authenticated; list own saved delivery addresses |
+| POST | `/api/checkout` | authenticated; COD order, required UUID `Idempotency-Key` |
+| GET | `/api/orders/{id}` | authenticated; own order snapshot |
 
 `GET /api/products` query parameters: `keyword`, `categoryId`, `minPrice`, `maxPrice`, `onSale`, `featured`,
 `sort` (`latest` · `price_asc` · `price_desc` · `rating` · `popular`), `page`, `size`.
@@ -215,7 +219,7 @@ Product editor regressions:
 - [x] Read cart, add products and replace quantities with stock/concurrency validation
 - [x] Remove cart items through DELETE or PUT quantity 0
 - [ ] Apply coupons
-- [ ] Checkout: one transaction with stock deduction (optimistic locking), price/address snapshot and status history
+- [x] COD checkout: preview, saved/new delivery address, idempotent placement, atomic stock deduction, snapshots and initial status history
 - [ ] Order management with a status state machine
 - [ ] Reviews, wishlist, customer addresses
 - [ ] Blog, banners, contact form, newsletter, store settings
@@ -223,6 +227,8 @@ Product editor regressions:
 - [ ] Restore the missing storefront source and connect customer flows
 - [ ] Implement the remaining admin APIs and connect their preview pages
 - [ ] Payment sandbox (PayPal / VNPay), caching, order confirmation emails
+
+Checkout API examples, shipping/confirmation rules and verification: [COD checkout](docs/cod-checkout-verification.md).
 
 ## Credits
 

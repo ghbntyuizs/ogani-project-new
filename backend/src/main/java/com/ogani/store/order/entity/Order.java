@@ -29,6 +29,18 @@ public class Order {
     @Column(name = "order_code", nullable = false, length = 20, unique = true)
     private String orderCode;
 
+    @Column(name = "checkout_key", length = 36)
+    private String checkoutKey;
+
+    @Column(name = "checkout_request_hash", length = 64)
+    private String checkoutRequestHash;
+
+    @Column(name = "currency", nullable = false, length = 3)
+    private String currency = "USD";
+
+    @Column(name = "ship_recipient_name", nullable = false, length = 121)
+    private String shipRecipientName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
