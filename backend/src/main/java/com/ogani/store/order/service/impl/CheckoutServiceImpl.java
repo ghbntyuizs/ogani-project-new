@@ -14,6 +14,7 @@ import com.ogani.store.order.repository.CartItemRepository;
 import com.ogani.store.order.repository.OrderRepository;
 import com.ogani.store.order.repository.OrderItemRepository;
 import com.ogani.store.order.repository.OrderStatusHistoryRepository;
+import com.ogani.store.order.mapper.OrderResponseMapper;
 import com.ogani.store.order.service.checkout.CheckoutFingerprint;
 import com.ogani.store.order.service.checkout.CheckoutPricing;
 import com.ogani.store.order.service.interfaces.CheckoutService;
@@ -47,6 +48,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final CartItemRepository cartItems;
     private final JdbcTemplate jdbc;
     private final Validator validator;
+    private final OrderResponseMapper orderResponseMapper;
 
     @Override public CheckoutPreviewResponse preview(UserPrincipal principal) {
         return pricing.snapshot(owner(principal).getId()).preview();
@@ -149,12 +151,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     }
 
     private OrderResponse response(Order o) {
-        var items=orderItems.findByOrderIdOrderByIdAsc(o.getId()).stream().map(i -> new CheckoutLineResponse(
-                i.getProduct()==null?null:i.getProduct().getId(),i.getProductName(),i.getUnitPrice(),i.getQuantity(),i.getLineTotal())).toList();
-        return new OrderResponse(o.getId(),o.getOrderCode(),o.getFirstName(),o.getLastName(),o.getEmail(),
-                new ShippingResponse(o.getShipRecipientName(),o.getPhone(),o.getShipCountry(),o.getShipAddress(),o.getShipCity(),o.getShipState(),o.getShipPostcode()),
-                o.getOrderNotes(),items,o.getSubtotal(),o.getDiscountAmount(),o.getShippingFee(),o.getTotal(),o.getCurrency(),
-                o.getPaymentMethod(),o.getPaymentStatus(),o.getOrderStatus(),o.getCreatedAt());
+        return orderResponseMapper.toResponse(o);
     }
 
     private static AppException invalid(String message) { return AppException.withCustomMessage(ErrorCode.VALIDATION_ERROR,message); }
