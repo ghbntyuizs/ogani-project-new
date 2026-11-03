@@ -71,9 +71,14 @@ API trạng thái và xác nhận thanh toán được tách riêng; không cậ
   - [x] true chuyển mặc định nguyên tử; false giữ mặc định hiện tại; không tăng số địa chỉ.
   - [x] Chống ghi xen kẽ, rollback và giữ nguyên snapshot đơn hàng cũ.
   - [x] [Tài liệu API và kiểm thử](customer-address-update-verification.md).
-- [ ] **DELETE `/api/addresses/{id}`** — Xóa địa chỉ của mình.
-- [ ] **PATCH `/api/addresses/{id}/default`** — Chọn địa chỉ mặc định.
-- [ ] Chốt quy tắc địa chỉ mặc định khi tạo/xóa; chống nhiều địa chỉ mặc định do request đồng thời.
+- [x] **DELETE `/api/addresses/{id}`** — Xóa địa chỉ của mình; mặc định được thay bằng địa chỉ ID nhỏ nhất còn lại.
+  - [x] Xóa địa chỉ cuối để danh sách rỗng; retry địa chỉ đã xóa404.
+  - [x] Địa chỉ đã dùng vẫn xóa được, không ảnh hưởng snapshot/retry đơn hàng cũ.
+- [x] **PATCH `/api/addresses/{id}/default`** — Chọn địa chỉ mặc định, không cần body; gọi lại cùng target an toàn.
+  - [x] Kiểm tra tồn tại/quyền, bỏ mặc định cũ trong cùng transaction.
+  - [x] Concurrency với chọn mặc định/xóa/tạo/checkout, rollback khi ghi lỗi.
+- [x] Chốt quy tắc địa chỉ mặc định khi tạo/xóa; chống nhiều địa chỉ mặc định do request đồng thời.
+  - [x] [Tài liệu API và kiểm thử](customer-address-delete-default-verification.md).
 - [x] Không ảnh hưởng địa chỉ snapshot của đơn cũ.
 
 Đã có GET `/api/checkout/addresses` để lấy danh sách địa chỉ đã lưu và chọn khi checkout.

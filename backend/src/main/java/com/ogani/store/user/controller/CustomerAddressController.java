@@ -33,4 +33,17 @@ public class CustomerAddressController {
             @PathVariable Long id,@Valid @RequestBody CreateAddressRequest request) {
         return ApiResponse.ok(addresses.update(principal,id,request));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary="Delete an owned address; oldest remaining address replaces a deleted default; order snapshots stay intact")
+    public ApiResponse<Void> delete(@AuthenticationPrincipal UserPrincipal principal,@PathVariable Long id) {
+        addresses.delete(principal,id);
+        return ApiResponse.ok("Address deleted",null);
+    }
+
+    @PatchMapping("/{id}/default")
+    @Operation(summary="Select an owned default address atomically; no request body; repeating the same target is safe")
+    public ApiResponse<SavedAddressResponse> setDefault(@AuthenticationPrincipal UserPrincipal principal,@PathVariable Long id) {
+        return ApiResponse.ok(addresses.setDefault(principal,id));
+    }
 }
