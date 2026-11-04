@@ -45,6 +45,6 @@ public class AuthController {
 
     @GetMapping("/me")
     public ApiResponse<UserInfo> me(@AuthenticationPrincipal UserPrincipal p) {
-        return ApiResponse.ok(new UserInfo(p.getId(), p.getUsername(), null, p.getRole()));
+        return ApiResponse.ok(new UserInfo(p.getId(), p.getUsername(), p.getFullName(), p.getRole()));
     }
 }

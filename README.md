@@ -27,6 +27,7 @@ An online grocery store: a **Spring Boot 4 REST API** backed by **PostgreSQL**, 
 - Cart read/add/update/remove API with stock validation and concurrent-write protection (reading an empty cart does not create database records)
 - COD checkout, customer order listing/cancellation, Admin/Staff order queries and guarded status/payment updates
 - Customer address creation/update with a 10-address limit, atomic default selection and delivery snapshots
+- Customer profile updates and password changes with immediate revocation of all access/refresh sessions
 
 **Designed in the database, API still to build:** coupons, refunds,
 product reviews, wishlist, blog (posts, tags, comments), banners, contact messages,
@@ -164,6 +165,8 @@ Fetch product detail when those fields are needed. The list SQL uses a projectio
 |---|---|---|
 | POST | `/api/auth/register`, `/login`, `/refresh`, `/logout` | public |
 | GET | `/api/auth/me` | authenticated |
+| PATCH | `/api/users/me` | CUSTOMER; partial firstName/lastName/phone update, protected fields rejected |
+| PUT | `/api/users/me/password` | CUSTOMER; verify current/new/confirmation, revoke all sessions and require login |
 | GET | `/api/categories` | public |
 | GET | `/api/products` | public |
 | GET | `/api/products/{slug}` | public |
@@ -222,6 +225,8 @@ Product editor regressions:
 `node --input-type=module -e "import('./admin/tests/product-editor.test.mjs').then(async m => console.log(await m.run()))"`.
 
 ## Roadmap
+
+Customer profile/password API examples and session revocation: [API and verification](docs/customer-account-verification.md).
 
 - [x] Database schema, seed data, Flyway migrations
 - [x] JPA entities for all tables

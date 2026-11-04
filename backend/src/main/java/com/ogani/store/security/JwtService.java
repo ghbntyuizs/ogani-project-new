@@ -29,6 +29,7 @@ public class JwtService {
                 .subject(p.getUsername())
                 .claim("uid", p.getId())
                 .claim("role", p.getRole())
+                .claim("ver",p.getTokenVersion())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTtl.toMillis()))
                 .signWith(key)
@@ -37,8 +38,18 @@ public class JwtService {
 
     /** Ném JwtException nếu token sai chữ ký / hết hạn. */
     public String extractEmail(String token) throws JwtException {
+        return extractIdentity(token).email();
+    }
+
+    public record AccessIdentity(String email,long tokenVersion) {}
+
+    public AccessIdentity extractIdentity(String token) throws JwtException {
         Claims c = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-        return c.getSubject();
+        Object version=c.get("ver");
+        if(version!=null && !(version instanceof Integer || version instanceof Long)) throw new JwtException("Invalid token version");
+        long revision=version==null?0:((Number)version).longValue();
+        if(revision<0) throw new JwtException("Invalid token version");
+        return new AccessIdentity(c.getSubject(),revision);
     }
 
     public long accessTtlSeconds() { return accessTtl.toSeconds(); }

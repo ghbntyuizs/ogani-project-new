@@ -85,8 +85,16 @@ API trạng thái và xác nhận thanh toán được tách riêng; không cậ
 
 ## 4. Tài khoản
 
-- [ ] **PATCH `/api/users/me`** — Cập nhật thông tin cá nhân.
-- [ ] **PUT `/api/users/me/password`** — Đổi mật khẩu.
+- [x] **PATCH `/api/users/me`** — Customer cập nhật firstName/lastName/phone của chính mình.
+  - [x] Normalize, validate null/blank/type/length; omission giữ nguyên, phone:null xóa số.
+  - [x] Chặn role/status/email/userId và field không hỗ trợ; số điện thoại không unique theo schema hiện tại.
+  - [x] DTO an toàn, auth/me trả fullName mới; kiểm tra role/status/token version hiện tại.
+- [x] **PUT `/api/users/me/password`** — Đổi mật khẩu và yêu cầu đăng nhập lại trên mọi thiết bị.
+  - [x] Kiểm tra mật khẩu cũ, xác nhận mới, khác mật khẩu cũ; BCrypt hash, không trả password/hash.
+  - [x] Giới hạn72 byte UTF-8 nhất quán với register/login, giữ min6 ký tự theo policy hiện tại.
+  - [x] Thu hồi toàn bộ access/refresh bằng V14 token version + revoke transaction.
+  - [x] Test login/refresh/password/profile đồng thời và rollback khi thu hồi token thất bại.
+  - [x] [Tài liệu API và kiểm thử](customer-account-verification.md).
 - [ ] **POST `/api/auth/forgot-password`** — Yêu cầu khôi phục mật khẩu.
 - [ ] **POST `/api/auth/reset-password`** — Đặt lại mật khẩu bằng token.
 - [ ] Token reset có hạn, dùng một lần; chốt thu hồi session sau đổi/reset mật khẩu.
