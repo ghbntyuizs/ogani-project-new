@@ -8,6 +8,7 @@ import com.ogani.store.auth.dto.response.AuthResponse;
 import com.ogani.store.auth.service.interfaces.AuthService;
 import com.ogani.store.common.exception.AppException;
 import com.ogani.store.common.exception.ErrorCode;
+import com.ogani.store.common.util.PasswordRules;
 import com.ogani.store.security.JwtProperties;
 import com.ogani.store.security.JwtService;
 import com.ogani.store.security.UserPrincipal;
@@ -66,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest r) {
+        PasswordRules.requireBcryptLength(r.password());
         String email = r.email().trim().toLowerCase(Locale.ROOT);
 
         if (users.existsByEmail(email)) {
@@ -95,7 +97,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest r) {
+        PasswordRules.requireBcryptLength(r.password());
         String email = r.email().trim().toLowerCase(Locale.ROOT);
+
+        var locked=users.findByEmailForUpdate(email);
 
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -103,9 +108,7 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        User u = users.findByEmail(email).orElseThrow();
-
-        return issueTokens(u);
+        return issueTokens(locked.orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS)));
     }
 
     /**
@@ -115,12 +118,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse refresh(String rawToken) {
-        RefreshToken t = refreshTokens.findByToken(hash(rawToken))
+        String digest=hash(rawToken);
+        Long userId=refreshTokens.findUserIdByToken(digest).orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
+        // Session writers lock user before token so password changes cannot lose a revocation.
+        User user=users.findByIdForCartUpdate(userId).orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
+        if(user.getStatus()!=UserStatus.ACTIVE) throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        RefreshToken t = refreshTokens.findByToken(digest)
                 .orElseThrow(() ->
                         new AppException(ErrorCode.INVALID_TOKEN)
                 );
 
-        if (t.getRevoked()
+        if (!t.getUser().getId().equals(userId) || t.getRevoked()
                 || !t.getExpiresAt().isAfter(LocalDateTime.now())) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
@@ -131,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
 
         t.setRevoked(true);
 
-        return issueTokens(t.getUser());
+        return issueTokens(user);
     }
 
     @Override

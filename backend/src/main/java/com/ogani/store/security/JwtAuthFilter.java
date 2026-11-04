@@ -30,9 +30,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String header = req.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ") && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                String email = jwtService.extractEmail(header.substring(7));
-                UserDetails user = userDetailsService.loadUserByUsername(email);   // 1 query / request: đủ cho quy mô này
-                if (user.isEnabled()) {
+                var identity=jwtService.extractIdentity(header.substring(7));
+                UserDetails user = userDetailsService.loadUserByUsername(identity.email());
+                if (user instanceof UserPrincipal principal && user.isEnabled() && principal.getTokenVersion()==identity.tokenVersion()) {
                     var auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
                     SecurityContextHolder.getContext().setAuthentication(auth);

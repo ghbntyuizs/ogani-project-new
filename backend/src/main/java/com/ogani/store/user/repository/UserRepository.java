@@ -13,5 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByIdForCartUpdate(Long id);
 
     Optional<User> findByEmail(String email);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.email=:email")
+    Optional<User> findByEmailForUpdate(String email);
     boolean existsByEmail(String email);
 }

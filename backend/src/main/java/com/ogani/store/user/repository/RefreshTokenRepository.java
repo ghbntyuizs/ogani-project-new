@@ -14,6 +14,13 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<RefreshToken> findByToken(String token);
 
+    @Query("select t.user.id from RefreshToken t where t.token=:token")
+    Optional<Long> findUserIdByToken(String token);
+
+    @Modifying(flushAutomatically=true,clearAutomatically=true)
+    @Query("update RefreshToken t set t.revoked=true where t.user.id=:userId and t.revoked=false")
+    int revokeAllByUserId(Long userId);
+
     @Modifying
     @Query(value = "delete from refresh_tokens where id in (select id from refresh_tokens "
             + "where revoked=true or expires_at<=:now order by id limit 1000 for update skip locked)", nativeQuery = true)

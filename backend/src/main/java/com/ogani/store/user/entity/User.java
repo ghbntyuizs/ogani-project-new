@@ -34,6 +34,9 @@ public class User {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
+    @Column(name = "token_version", nullable = false)
+    private Long tokenVersion = 0L;
+
     @Column(name = "first_name", nullable = false, length = 60)
     private String firstName;
 
