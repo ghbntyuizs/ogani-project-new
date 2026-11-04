@@ -1,4 +1,18 @@
 spring:
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      "[mail.smtp.auth]": ${SMTP_AUTH:false}
+      "[mail.smtp.starttls.enable]": ${SMTP_STARTTLS:false}
+      "[mail.smtp.starttls.required]": ${SMTP_STARTTLS:false}
+      "[mail.smtp.ssl.enable]": ${SMTP_SSL:false}
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 3000
+      "[mail.smtp.writetimeout]": 5000
   profiles:
     active: local
   servlet:
@@ -24,6 +38,15 @@ server:
   port: 8080
 
 app:
+  password-reset:
+    ttl-minutes: ${RESET_TTL_MINUTES:15}
+    email-limit: ${RESET_EMAIL_LIMIT:3}
+    ip-limit: ${RESET_IP_LIMIT:20}
+    reset-ip-limit: ${RESET_ATTEMPT_LIMIT:50}
+    window-minutes: ${RESET_WINDOW_MINUTES:15}
+    cooldown-seconds: ${RESET_COOLDOWN_SECONDS:60}
+    reset-url: ${PASSWORD_RESET_URL:http://localhost:8080/reset-password.html}
+    from: ${SMTP_FROM:no-reply@ogani.local}
   jwt:
     secret: ${JWT_SECRET:}
     access-ttl-minutes: 15

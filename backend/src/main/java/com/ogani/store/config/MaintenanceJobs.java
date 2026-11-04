@@ -2,6 +2,7 @@ package com.ogani.store.config;
 
 import com.ogani.store.catalog.service.impl.ManagedUploadService;
 import com.ogani.store.user.service.TokenMaintenanceService;
+import com.ogani.store.auth.reset.PasswordResetMaintenanceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 public class MaintenanceJobs {
     private final ManagedUploadService uploads;
     private final TokenMaintenanceService tokens;
+    private final PasswordResetMaintenanceService resets;
     @Value("${app.maintenance.upload-retention-hours:24}")
     private long uploadRetentionHours;
 
@@ -26,7 +28,9 @@ public class MaintenanceJobs {
     public void cleanup() {
         LocalDateTime now = LocalDateTime.now();
         int tokenCount = tokens.cleanup(now);
+        int resetCount = resets.cleanup();
         int imageCount = uploads.cleanupUnclaimed(now.minusHours(Math.max(24, uploadRetentionHours)), 100);
         log.info("Maintenance removed {} inactive tokens and {} never-used uploads", tokenCount, imageCount);
+        log.info("Maintenance removed {} old password-recovery records",resetCount);
     }
 }
