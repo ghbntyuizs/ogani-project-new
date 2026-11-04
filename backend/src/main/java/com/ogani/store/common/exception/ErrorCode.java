@@ -17,6 +17,8 @@ public enum ErrorCode {
     INVALID_CREDENTIALS("Email or password is incorrect", HttpStatus.UNAUTHORIZED),
     ACCOUNT_LOCKED("Your account is locked", HttpStatus.UNAUTHORIZED),
     INVALID_TOKEN("Refresh token is invalid or expired", HttpStatus.UNAUTHORIZED),
+    INVALID_RESET_TOKEN("Reset token is invalid or expired",HttpStatus.BAD_REQUEST),
+    PASSWORD_RESET_RATE_LIMITED("Too many reset attempts; try again later",HttpStatus.TOO_MANY_REQUESTS),
 
     // === 2. Validation Errors ===
     VALIDATION_ERROR("Invalid input data", HttpStatus.BAD_REQUEST),

@@ -95,9 +95,14 @@ API trạng thái và xác nhận thanh toán được tách riêng; không cậ
   - [x] Thu hồi toàn bộ access/refresh bằng V14 token version + revoke transaction.
   - [x] Test login/refresh/password/profile đồng thời và rollback khi thu hồi token thất bại.
   - [x] [Tài liệu API và kiểm thử](customer-account-verification.md).
-- [ ] **POST `/api/auth/forgot-password`** — Yêu cầu khôi phục mật khẩu.
-- [ ] **POST `/api/auth/reset-password`** — Đặt lại mật khẩu bằng token.
-- [ ] Token reset có hạn, dùng một lần; chốt thu hồi session sau đổi/reset mật khẩu.
+- [x] **POST `/api/auth/forgot-password`** — Email hợp lệ, phản hồi chung không tiết lộ tài khoản; SMTP qua env và Mailpit local.
+  - [x] Token ngẫu nhiên, chỉ lưu hash, TTL15 phút; rate-limit email/IP và cooldown.
+  - [x] Lookup/issuance/mail chạy nền có giới hạn; request cũ chậm không ghi đè yêu cầu mới hơn.
+- [x] **POST `/api/auth/reset-password`** — Kiểm tra token tồn tại/hạn/use/revoke/version, validate và hash mật khẩu mới.
+  - [x] Single-use nguyên tử, thu hồi toàn bộ access/refresh và reset link cũ, yêu cầu login lại.
+  - [x] Test sai/hết hạn/đã dùng, SMTP, role/status, concurrency, rollback, cleanup và trang reset tối thiểu.
+- [x] Token reset có hạn, dùng một lần; thu hồi toàn bộ session sau đổi/reset mật khẩu.
+  - [x] [Cấu hình SMTP/Mailpit và hướng dẫn test](password-recovery-verification.md).
 
 ## 5. Coupon — Customer
 
