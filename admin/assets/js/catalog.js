@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const api = window.OganiAPI;
+  const api = new Proxy({}, {get:(_target,name)=>window.OganiAPI[name]});
   const $ = (selector, root = document) => root.querySelector(selector);
   const ui = () => window.OganiUI;
   const node = (...args) => ui().node(...args);

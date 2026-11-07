@@ -12,6 +12,8 @@ import jakarta.persistence.LockModeType;
 import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
+    Optional<Order> findByGuestScopeAndCheckoutKey(String guestScope, String checkoutKey);
+    Optional<Order> findByIdAndGuestScope(Long id, String guestScope);
     Optional<Order> findByUserIdAndCheckoutKey(Long userId, String checkoutKey);
     Optional<Order> findByIdAndUserId(Long id, Long userId);
 

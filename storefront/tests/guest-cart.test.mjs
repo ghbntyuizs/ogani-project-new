@@ -1,0 +1,9 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {createGuestCart} from '../assets/guest-cart.js';
+function setup(){const values=new Map(),storage={getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};return {values,storage,cart:createGuestCart({storage})};}
+test('guest basket stores IDs and quantities without account/address/price data',()=>{const {cart,values}=setup();cart.add(2,1);cart.add(2,2);assert.deepEqual(cart.lines(),[{productId:2,quantity:3}]);assert.equal([...values.values()].some(v=>/price|address|email|token/i.test(v)),false);});
+test('zero removes, invalid IDs and fractional/negative quantities are rejected',()=>{const {cart}=setup();cart.add(1,1);cart.set(1,0);assert.deepEqual(cart.lines(),[]);assert.throws(()=>cart.add(-1,1));assert.throws(()=>cart.add(1,1.5));assert.throws(()=>cart.set(1,-1));});
+test('guest basket survives account changes and only purchased quantities are cleared',()=>{const {cart,storage}=setup();cart.add(1,2);const placed=cart.lines();cart.add(1,1);cart.add(2,1);cart.consume(placed);assert.deepEqual(createGuestCart({storage}).lines(),[{productId:1,quantity:1},{productId:2,quantity:1}]);});
+test('guest basket limits distinct products and corrupt persisted input fails closed',()=>{const {cart,values}=setup();for(let id=1;id<=100;id++)cart.add(id,1);assert.throws(()=>cart.add(101,1));values.set('ogani.guest.cart','[{"productId":1,"quantity":-3}]');assert.deepEqual(cart.lines(),[]);});
+test('replayed confirmation cannot consume newly added items twice',()=>{const {cart,storage}=setup();cart.add(1,2);cart.consume([{productId:1,quantity:2}],42);cart.add(1,1);createGuestCart({storage}).consume([{productId:1,quantity:2}],42);assert.deepEqual(cart.lines(),[{productId:1,quantity:1}]);});

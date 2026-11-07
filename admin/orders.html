@@ -63,7 +63,7 @@
             <li class="dropdown-header">Welcome!</li>
             <li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear"></i> Settings</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="page-login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="/login.html" data-action="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
           </ul>
         </div>
       </div>
@@ -75,22 +75,7 @@
         <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="index.html" class="text-decoration-none text-muted-green">Home</a></li><li class="breadcrumb-item active text-main" aria-current="page">Orders</li></ol></nav>
       </div>
     </div>
-    <div class="table-card-custom">
-      <div class="status-pills"><button type="button" class="status-pill active" data-filter="ALL">All</button><button type="button" class="status-pill" data-filter="PENDING">Pending</button><button type="button" class="status-pill" data-filter="CONFIRMED">Confirmed</button><button type="button" class="status-pill" data-filter="SHIPPING">Shipping</button><button type="button" class="status-pill" data-filter="COMPLETED">Completed</button><button type="button" class="status-pill" data-filter="CANCELLED">Cancelled</button></div>
-      <div class="table-header-control">
-        <div class="table-search-box"><i class="bi bi-search table-search-icon"></i><input type="text" class="table-search-input" placeholder="Search order code or customer..." data-table-search></div>
-        <div class="table-filter-group"><button class="btn-table-action" type="button"><i class="bi bi-file-earmark-arrow-down"></i> Export</button></div>
-      </div>
-      <div class="table-responsive"><table class="table-custom"><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Date</th><th>Payment</th><th>Paid?</th><th>Total</th><th>Status</th><th class="text-center">Actions</th></tr></thead><tbody><tr data-status="PENDING"><td><a href="order-detail.html" class="table-order-id text-decoration-none">#ORD-20261017-0003</a></td><td><div class="table-user-cell"><img src="assets/images/user_3.jpg" alt="Jane Cooper" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'"><div><div class="table-user-name">Jane Cooper</div><div class="table-user-sub">jane@example.com</div></div></div></td><td>2</td><td>Oct 17, 2026</td><td>Cod</td><td><span class="badge-table pending">Unpaid</span></td><td><span class="table-amount">$77.00</span></td><td><span class="badge-table pending">Pending</span></td><td><div class="d-flex justify-content-center gap-1"><a href="order-detail.html" class="table-btn-action" title="View"><i class="bi bi-eye"></i></a></div></td></tr><tr data-status="SHIPPING"><td><a href="order-detail.html" class="table-order-id text-decoration-none">#ORD-20261015-0002</a></td><td><div class="table-user-cell"><img src="assets/images/user_2.jpg" alt="Wade Warren" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'"><div><div class="table-user-name">Wade Warren</div><div class="table-user-sub">wade@example.com</div></div></div></td><td>1</td><td>Oct 15, 2026</td><td>Paypal</td><td><span class="badge-table success">Paid</span></td><td><span class="table-amount">$95.00</span></td><td><span class="badge-table info">Shipping</span></td><td><div class="d-flex justify-content-center gap-1"><a href="order-detail.html" class="table-btn-action" title="View"><i class="bi bi-eye"></i></a></div></td></tr><tr data-status="COMPLETED"><td><a href="order-detail.html" class="table-order-id text-decoration-none">#ORD-20261010-0001</a></td><td><div class="table-user-cell"><img src="assets/images/user_1.jpg" alt="Eleanor Pena" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'"><div><div class="table-user-name">Eleanor Pena</div><div class="table-user-sub">eleanor@example.com</div></div></div></td><td>2</td><td>Oct 10, 2026</td><td>Cod</td><td><span class="badge-table success">Paid</span></td><td><span class="table-amount">$169.00</span></td><td><span class="badge-table success">Completed</span></td><td><div class="d-flex justify-content-center gap-1"><a href="order-detail.html" class="table-btn-action" title="View"><i class="bi bi-eye"></i></a></div></td></tr></tbody></table></div>
-      <div class="table-footer-control">
-        <span class="table-pagination-info">Showing 1 to 3 of 3 entries</span>
-        <nav aria-label="Page navigation"><ul class="pagination mb-0 gap-1">
-          <li class="page-item disabled"><a class="page-link border-0" href="#"><i class="bi bi-chevron-left"></i></a></li>
-          <li class="page-item active"><a class="page-link border-0" href="#">1</a></li>
-          <li class="page-item disabled"><a class="page-link border-0" href="#"><i class="bi bi-chevron-right"></i></a></li>
-        </ul></nav>
-      </div>
-    </div>
+    <div id="orders-api-root" aria-live="polite">Loading orders...</div>
     <footer class="footer-custom">
       <div class="footer-left"><span class="footer-logo"><i class="bi bi-basket2-fill"></i> Ogani Admin</span><span class="footer-separator">|</span>
         <span class="footer-copy">&copy; 2026 Ogani Food Store &bull; Admin UI based on Spark Admin (MIT) by ThemeWagon</span></div>

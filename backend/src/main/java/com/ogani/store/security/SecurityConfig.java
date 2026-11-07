@@ -40,6 +40,7 @@ public class SecurityConfig {
                         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(a -> a
+                        .requestMatchers("/api/guest/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
@@ -49,6 +50,7 @@ public class SecurityConfig {
                                 "/api/auth/reset-password"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,"/reset-password.html","/password-reset.js","/password-reset.css").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/shop","/shop/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",

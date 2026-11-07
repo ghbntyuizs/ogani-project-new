@@ -10,6 +10,8 @@ import com.ogani.store.common.exception.ErrorCode;
 import com.ogani.store.order.dto.response.checkout.CheckoutLineResponse;
 import com.ogani.store.order.dto.response.checkout.CheckoutPreviewResponse;
 import com.ogani.store.order.entity.Cart;
+import com.ogani.store.order.dto.request.checkout.GuestCartRequest;
+import com.ogani.store.order.repository.CartCheckoutLine;
 import com.ogani.store.order.repository.CartItemRepository;
 import com.ogani.store.order.repository.CartRepository;
 import com.ogani.store.order.repository.CheckoutSettingsRepository;
@@ -43,12 +45,20 @@ public class CheckoutPricing {
         Cart cart = carts.findByUserId(userId).orElseThrow(() -> conflict("Cart is empty"));
         if (cart.getCoupon() != null) throw conflict("Coupons are not supported by COD checkout yet");
         var rows = cartItems.findCheckoutLines(cart.getId());
+        return quote(cart, rows, cart.getId().toString());
+    }
+
+    public Snapshot guestSnapshot(String scope, List<GuestCartRequest.Line> items) {
+        return quote(null, new GuestCartRequest(items).items(), "guest:"+scope);
+    }
+
+    private Snapshot quote(Cart cart, List<? extends CartCheckoutLine> rows, String scope) {
         if (rows.isEmpty()) throw conflict("Cart is empty");
         List<Purchase> purchases = new ArrayList<>();
         BigDecimal subtotal = BigDecimal.ZERO.setScale(2);
         TreeSet<Integer> categoryIds = new TreeSet<>();
         List<String> fingerprint = new ArrayList<>();
-        fingerprint.add(cart.getId().toString());
+        fingerprint.add(scope);
         for (var row : rows) {
             Product product = products.findByIdForUpdate(row.getProductId())
                     .orElseThrow(() -> itemConflict(row.getProductId(), "Product no longer exists"));
