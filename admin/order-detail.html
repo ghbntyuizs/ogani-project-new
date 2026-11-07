@@ -63,7 +63,7 @@
             <li class="dropdown-header">Welcome!</li>
             <li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear"></i> Settings</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="page-login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="/login.html" data-action="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
           </ul>
         </div>
       </div>
@@ -75,26 +75,7 @@
         <nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item"><a href="index.html" class="text-decoration-none text-muted-green">Home</a></li><li class="breadcrumb-item text-muted-green"><a href="orders.html" class="text-decoration-none text-muted-green">Orders</a></li><li class="breadcrumb-item active text-main" aria-current="page">ORD-20261017-0003</li></ol></nav>
       </div>
     </div>
-    <div class="row g-4">
- <div class="col-lg-8">
-  <div class="card border-light shadow-sm p-4 mb-4"><div class="d-flex justify-content-between align-items-center mb-3"><h5 class="card-title mb-0">#ORD-20261017-0003</h5><span class="badge-table pending">Pending</span></div>
-   <div class="table-responsive"><table class="table-custom"><thead><tr><th>Product</th><th>Unit price (snapshot)</th><th>Qty</th><th>Line total</th></tr></thead><tbody><tr><td><div class="d-flex align-items-center gap-3"><img src="assets/images/ogani/details/product-details-2.jpg" class="prod-thumb" alt=""><span class="table-product-name">Fresh Garden Vegetable</span></div></td><td>$35.00</td><td>2</td><td class="table-amount">$70.00</td></tr><tr><td><div class="d-flex align-items-center gap-3"><img src="assets/images/ogani/product/product-4.jpg" class="prod-thumb" alt=""><span class="table-product-name">Black Grapes</span></div></td><td>$10.00</td><td>1</td><td class="table-amount">$10.00</td></tr></tbody></table></div>
-   <div class="mt-3 ms-auto" style="max-width:380px"><div class="kv-row"><span>Subtotal</span><span>$80.00</span></div><div class="kv-row"><span>Coupon (WELCOME10)</span><span>-$8.00</span></div>
-    <div class="kv-row"><span>Shipping</span><span>$5.00</span></div><div class="kv-row total"><span>Total</span><span>$77.00</span></div></div></div>
-  <div class="card border-light shadow-sm p-4"><h5 class="card-title mb-3">Status history</h5>
-   <ul class="timeline" id="orderTimeline"><li><strong>PENDING</strong><small>Oct 17, 2026 6:05 PM · Order placed</small></li></ul></div>
- </div>
- <div class="col-lg-4">
-  <div class="card border-light shadow-sm p-4 mb-4"><h5 class="card-title mb-3">Update status</h5>
-   <div class="mb-3"><select class="form-select-custom" id="orderStatus" name="orderStatus"><option value="PENDING" selected>Pending</option><option value="CONFIRMED">Confirmed</option><option value="SHIPPING">Shipping</option><option value="COMPLETED">Completed</option><option value="CANCELLED">Cancelled</option></select></div><div class="mb-3"><input type="text" class="form-control-custom" id="statusNote" name="statusNote" value="" placeholder="Note (optional)" ></div>
-   <button type="button" class="btn-custom btn-custom-primary w-100" id="btnUpdateStatus">Update</button></div>
-  <div class="card border-light shadow-sm p-4 mb-4"><h5 class="card-title mb-3">Customer</h5><div class="table-user-cell"><img src="assets/images/user_3.jpg" alt="Jane Cooper" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'"><div><div class="table-user-name">Jane Cooper</div><div class="table-user-sub">jane@example.com</div></div></div>
-   <div class="kv-row mt-3"><span>Phone</span><span>0933333333</span></div></div>
-  <div class="card border-light shadow-sm p-4 mb-4"><h5 class="card-title mb-3">Shipping address</h5><p class="mb-2">Jane Cooper<br>8 Le Loi, Ha Noi, HN 100000<br>Vietnam</p>
-   <div class="text-muted small">Order notes: —</div></div>
-  <div class="card border-light shadow-sm p-4"><h5 class="card-title mb-3">Payment</h5><div class="kv-row"><span>Method</span><span>Cash on delivery</span></div>
-   <div class="kv-row"><span>Status</span><span><span class="badge-table pending">Unpaid</span></span></div></div>
- </div></div>
+    <div id="orders-api-root" aria-live="polite">Loading order...</div>
     <footer class="footer-custom">
       <div class="footer-left"><span class="footer-logo"><i class="bi bi-basket2-fill"></i> Ogani Admin</span><span class="footer-separator">|</span>
         <span class="footer-copy">&copy; 2026 Ogani Food Store &bull; Admin UI based on Spark Admin (MIT) by ThemeWagon</span></div>

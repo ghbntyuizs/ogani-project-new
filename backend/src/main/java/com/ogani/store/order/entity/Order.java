@@ -36,6 +36,9 @@ public class Order {
     @Column(name = "checkout_key", length = 36)
     private String checkoutKey;
 
+    @Column(name = "guest_scope", length = 64)
+    private String guestScope;
+
     @Column(name = "checkout_request_hash", length = 64)
     private String checkoutRequestHash;
 

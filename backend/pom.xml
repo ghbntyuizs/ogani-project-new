@@ -54,6 +54,23 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>${project.basedir}/../storefront</directory>
+        <targetPath>static/shop</targetPath>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>tests/**</exclude>
+          <exclude>package.json</exclude>
+          <exclude>dev-server.mjs</exclude>
+          <exclude>README.md</exclude>
+        </excludes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
